@@ -42,3 +42,7 @@ Thumbs.db
 
 # Assets
 /src/assets/
+
+# Node
+node_modules/
+/se3316-lab4/.angular/

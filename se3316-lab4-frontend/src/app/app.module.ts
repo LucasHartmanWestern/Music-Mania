@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { TrackSearchComponent } from './track-search/track-search.component';
 import { TrackDisplayComponent } from './track-display/track-display.component';
 import { PlaylistComponent } from './playlist/playlist.component';
-import { ModalsComponent } from './modals/modals.component';
 import { PlaylistSelectorComponent } from './modals/playlist-selector/playlist-selector.component';
 
 @NgModule({
@@ -15,7 +14,6 @@ import { PlaylistSelectorComponent } from './modals/playlist-selector/playlist-s
     TrackSearchComponent,
     TrackDisplayComponent,
     PlaylistComponent,
-    ModalsComponent,
     PlaylistSelectorComponent
   ],
   imports: [

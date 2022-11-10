@@ -1,0 +1,27 @@
+.resultsContainer {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  width: calc(100% - 48px);
+  height: calc(100% - 100px);
+  margin: auto;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  padding: 12px;
+
+  .header {
+    font-size: 1.8rem;
+    display: flex;
+    justify-content: center;
+
+    button {
+      outline: none;
+      background-color: transparent;
+      border: none;
+      font-size: 2.4rem;
+      color: red;
+      cursor: pointer;
+      margin-left: 24px;
+    }
+  }
+}

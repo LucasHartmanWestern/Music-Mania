@@ -1,0 +1,35 @@
+dialog {
+  width: 50%;
+  min-height: 500px;
+  border: none;
+  border-radius: 12px;
+  text-align: center;
+
+  .trackTitle {
+    font-size: 1.4rem;
+    position: absolute;
+    bottom: 24px;
+    width: 100%;
+    left: 0;
+    font-weight: bold;
+  }
+
+  .listHolder {
+    overflow-y: scroll;
+    max-height: 375px;
+  }
+
+  span:not(.trackTitle) {
+    display: block;
+    cursor: pointer;
+    margin: 12px;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    box-shadow: rgb(99 99 99 / 20%) 0px 2px 8px 0px;
+    padding: 12px;
+  }
+
+  span:hover:not(.trackTitle) {
+    background-color: #ecf0f1;
+  }
+}

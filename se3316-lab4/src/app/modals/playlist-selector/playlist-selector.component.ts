@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Track } from "../../core/constants/common.enum";
+import { Playlist, Track } from "../../core/constants/common.enum";
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -9,17 +9,16 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class PlaylistSelectorComponent implements OnInit {
 
-  @Input() trackToInsert: any;
-  @Output() selectedPlaylist: EventEmitter<any> = new EventEmitter();
+  @Input() trackToInsert: Track | any;
+  @Input() lists: Playlist[] | any;
+  @Output() selectedPlaylist: EventEmitter<Playlist> = new EventEmitter();
 
   constructor(public activeModal: NgbActiveModal, private modalService: NgbModal) { }
 
-  ngOnInit(): void {
-  }
-
+  ngOnInit(): void { }
 
   // Save the changes and close the modal
-  editDetails(selectedList: any){
+  selectList(selectedList: Playlist){
     this.selectedPlaylist.emit(selectedList);
     this.close();
   }

@@ -15,19 +15,21 @@ export class MusicService {
 
   previewSelection$: Subject <{ preview: Track | Artist | any, type: string }> = new Subject<{ preview: Track | Artist | any, type: string }>();
   searchParams$: Subject <{ trackTitle: string, artistTitle: string, albumTitle: string }> = new Subject<{ trackTitle: string, artistTitle: string, albumTitle: string }>();
+  lists$: Subject <{ lists: Playlist[] | any }> = new Subject<{ lists: Playlist[] }>();
+  updatedList$: Subject <{ list: Playlist | any }> = new Subject<{ list: Playlist }>();
 
   constructor(private http: HttpClient) { }
 
   getGenres(): Observable<Genre[]> {
     return this.http.get<Genre[]>(Constants.apiPaths.genres).pipe(
-      tap(data => data),
+      map((data: Genre[]) => data),
       catchError(this.handleError)
     );
   }
 
   getTracks(trackTitle?: string, albumTitle?: string, genreTitle?: string, artistName?: string): Observable<Track[]> {
     return this.http.get<Track[]>(`${Constants.apiPaths.tracks}?limit=${this.trackSearchLim}${trackTitle ? '&track_title=' + trackTitle : ''}${albumTitle ? '&album_title=' + albumTitle : ''}${genreTitle ? '&genre_title=' + genreTitle : ''}${artistName ? '&artist_name=' + artistName : ''}`).pipe(
-      tap(data => data),
+      map((data: Track[]) => data),
       catchError(this.handleError)
     );
   }
@@ -35,6 +37,34 @@ export class MusicService {
   getArtists(artistName: string): Observable<Artist[]> {
     return this.http.get<Artist[]>(`${Constants.apiPaths.artists}?limit=${this.artistSearchLimit}&name=${artistName}`).pipe(
       tap(data => data),
+      catchError(this.handleError)
+    );
+  }
+
+  getLists(listName?: string): Observable<Playlist[]> {
+    return this.http.get<Playlist[]>(`${Constants.apiPaths.playlists}${listName ? '/' + listName + '/tracks' : ''}`).pipe(
+      tap(data => data),
+      catchError(this.handleError)
+    );
+  }
+
+  createList(listName: string): Observable<Playlist[]> {
+    return this.http.put(`${Constants.apiPaths.playlists}/${listName}`, null).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateList(list: Playlist, track: Track): Observable<Playlist[]> {
+    console.log(list.trackList);
+
+    return this.http.put(`${Constants.apiPaths.playlists}/${list.listName}/tracks`, {
+      "tracks": [parseInt(track?.trackID), ...list?.trackList?.map(track => parseInt(track))]
+      }
+    ).pipe(
+      map((res: any) => res)
+    ).pipe(
       catchError(this.handleError)
     );
   }

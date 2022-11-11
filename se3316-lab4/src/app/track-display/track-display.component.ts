@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MusicService } from "../core/services/music/music.service";
-import { Artist, Genre, Track } from "../core/constants/common.enum";
+import {Artist, Genre, Playlist, Track} from "../core/constants/common.enum";
 import { PlaylistSelectorComponent } from "../modals/playlist-selector/playlist-selector.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -15,6 +15,7 @@ export class TrackDisplayComponent implements OnInit {
   genres: Genre[] = [];
   tracks: Track[] = [];
   artists: Artist[] = [];
+  lists: Playlist[] = [];
 
   sortTracking = {index: -1, sort: 'ASC'};
 
@@ -29,14 +30,18 @@ export class TrackDisplayComponent implements OnInit {
       else if (val.artistTitle) this.getArtists(val.artistTitle);
       else { this.tracks = []; this.artists = []; }
     });
+
+    this.musicService.lists$.subscribe((val: {lists: Playlist[]}) => {
+      this.lists = val.lists;
+    });
   }
 
   // Get and display the genres
   getGenres(): void {
-    this.spinner.show();
+    //this.spinner.show();
     this.musicService.getGenres().subscribe(res => {
       this.genres = res;
-      this.spinner.hide();
+      //this.spinner.hide();
     }, error => console.log(error));
   }
 
@@ -64,9 +69,17 @@ export class TrackDisplayComponent implements OnInit {
   addToList(track: Track): void {
     const modalRef = this.modalService.open(PlaylistSelectorComponent, {centered: true, windowClass: 'PlaylistSelectorModalClass'});
     modalRef.componentInstance.trackToInsert = track;
+    modalRef.componentInstance.lists = this.lists;
 
-    modalRef.componentInstance.selectedPlaylist.subscribe((playlist: any) => {
-      console.log(playlist);
+    modalRef.componentInstance.selectedPlaylist.subscribe((playlist: Playlist) => {
+      this.musicService.updateList(playlist, track).subscribe((res: any) => {
+        playlist.trackList = res.tracks;
+        // @ts-ignore
+        playlist.totalPlayTime += parseInt(track.trackDuration.split(':')[0] * 60) + parseInt(track.trackDuration.split(':')[1]);
+        playlist.trackCount += 1;
+
+        this.musicService.updatedList$.next({list: playlist});
+      });
     });
 
   }

@@ -2,6 +2,18 @@
 <div class="sidebar" [ngClass]="previewAvailable ? '' : 'big'">
   <div class="home"><button class="homeBtn" (click)="home()">Home</button></div>
   <div class="lists">
-    <div><button class="createList">+ Create new list</button></div>
+    <div><button class="createList" [ngbPopover]="listNameCreator" placement="bottom" [autoClose]="'outside'" #selectorPopover="ngbPopover">+ Create new list</button></div>
+
+    <div *ngFor="let list of lists" class="list" (click)="readList(list.listName)">
+      <span class="listName">{{list.listName}}</span>
+      <span>{{getListInfo(list)}}</span>
+    </div>
   </div>
+
+  <ng-template #listNameCreator>
+    <div class="searchBox d-flex">
+      <input name="playlistName" type="text" placeholder="New Playlist Name" (keyup)="($event.key === 'Enter') ? selectorPopover.close() : ''; ($event.key === 'Enter') ? createList(name.value) : '';" #name>
+      <input type="submit" class="searchBtn" value="" (click)="createList(name.value); selectorPopover.close()">
+    </div>
+  </ng-template>
 </div>

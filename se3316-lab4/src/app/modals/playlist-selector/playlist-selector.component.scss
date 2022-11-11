@@ -14,12 +14,18 @@
     font-weight: bold;
   }
 
+  .header {
+    font-size: 1.4rem;
+    width: 100%;
+    font-weight: bold;
+  }
+
   .listHolder {
     overflow-y: scroll;
     max-height: 375px;
   }
 
-  span:not(.trackTitle) {
+  span:not(.trackTitle):not(.header) {
     display: block;
     cursor: pointer;
     margin: 12px;
@@ -29,7 +35,7 @@
     padding: 12px;
   }
 
-  span:hover:not(.trackTitle) {
+  span:hover:not(.trackTitle):not(.header) {
     background-color: #ecf0f1;
   }
 
@@ -40,5 +46,6 @@
     border-radius: 12px;
     background-color: #FFFFFF;
     width: 120px;
+    margin-top: 8px;
   }
 }

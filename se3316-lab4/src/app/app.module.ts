@@ -8,11 +8,12 @@ import { TrackDisplayComponent } from './track-display/track-display.component';
 import { PlaylistComponent } from './sidebar/playlist/playlist.component';
 import { PlaylistSelectorComponent } from './modals/playlist-selector/playlist-selector.component';
 import { HttpClientModule } from "@angular/common/http";
-import { NgbActiveModal, NgbModal, NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbActiveModal, NgbModal, NgbModule, NgbPopover } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { PreviewComponent } from './sidebar/preview/preview.component';
+import { NgClass } from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -32,7 +33,7 @@ import { PreviewComponent } from './sidebar/preview/preview.component';
     NgxSpinnerModule,
     BrowserAnimationsModule
   ],
-  providers: [NgbActiveModal, NgbModal, TrackDisplayComponent],
+  providers: [NgbActiveModal, NgbModal, TrackDisplayComponent, NgbPopover, NgClass],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

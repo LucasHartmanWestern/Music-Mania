@@ -7,7 +7,7 @@ export interface Genre {
 }
 
 export interface Track {
-  trackID: number,
+  trackID: string,
   albumId: number,
   albumTitle: string,
   artistName: string,
@@ -31,5 +31,8 @@ export interface Artist {
 }
 
 export interface Playlist {
-
+  listName: string,
+  trackCount: number,
+  trackList: any[],
+  totalPlayTime: number
 }

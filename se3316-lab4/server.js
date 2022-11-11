@@ -219,12 +219,42 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     const schema = Joi.string().required();
     const result = Joi.validate(listName, schema);
 
+    let trackIDs = [];
+    let returnList = [];
+
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
         // Check if list exists, and if it does return the tracks
         if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
         else {
-            res.send(await storage.getItem(listName));
+            trackIDs = await storage.getItem(listName);
+            // Loop through all tracks and return any matching tracks
+            fs.createReadStream('storage/lab3-data/raw_tracks.csv')
+              .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
+              .on('data', (row) => {
+                if (trackIDs.tracks.includes(parseInt(row['track_id']))) {
+                  returnList.push({
+                    trackID: row['track_id'],
+                    albumId: row['album_id'],
+                    albumTitle: row['album_title'],
+                    artistName: row['artist_name'],
+                    tags: row['tags'],
+                    trackDateCreated: row['track_date_created'],
+                    trackDateRecorded: row['track_date_recorded'],
+                    trackDuration: row['track_duration'],
+                    trackGenres: row['track_genres'],
+                    trackNumber: row['track_number'],
+                    trackTitle: row['track_title'],
+                    trackImage: row['track_image_file']
+                  });
+                }
+              })
+              .on('error', (error) => {
+                res.status(500).send(error.message);
+              })
+              .on('end', () => {
+                res.send(returnList);
+              });
         }
     }
 });
@@ -250,13 +280,16 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 });
 
 // Get a list of list names, number of tracks that are saved in each list and the total play time of each list
-app.get('/api/v1/music/lists', (req, res) => {
+app.get('/api/v1/music/lists', async (req, res) => {
+
     // Get saved list info
     let entries = {
-        keys: storage.keys(),
-        values: storage.values()
+        keys: await storage.keys(),
+        values: await storage.values()
     }
     let returnList = [];
+
+
     // Populate return list with default play time value
     for (let i = 0; i < entries.keys.length; i++) {
         returnList.push({

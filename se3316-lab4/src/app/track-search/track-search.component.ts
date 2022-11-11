@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MusicService } from "../core/services/music/music.service";
 
 @Component({
   selector: 'app-track-search',
@@ -7,9 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TrackSearchComponent implements OnInit {
 
-  constructor() { }
+  constructor(private musicService: MusicService) { }
 
   ngOnInit(): void {
+  }
+
+  search(event: any, trackTitle: string, artistTitle: string, albumTitle: string): void {
+    event.preventDefault();
+    this.musicService.searchParams$.next({trackTitle: trackTitle, artistTitle: artistTitle, albumTitle: albumTitle});
   }
 
 }

@@ -1,7 +1,7 @@
 <div class="resultsContainer">
 
   <!-- Genre display -->
-  <ng-container *ngIf="!tracks.length">
+  <ng-container *ngIf="!tracks.length && !artists.length">
     <ul>
       <li *ngFor="let genre of genres" (click)="getTracks('', '', genre.title)">
         <div class="genre">
@@ -33,6 +33,23 @@
         <td>{{row.albumTitle}}</td>
         <td>{{row.trackDuration}}</td>
         <td (click)="addToList(row)">+</td>
+      </tr>
+    </table>
+  </ng-container>
+
+  <!-- Track display -->
+  <ng-container *ngIf="artists.length">
+    <table>
+      <tr class="headers">
+        <th (click)="sortTable(0)">#</th>
+        <th (click)="sortTable(1)">Name</th>
+        <th (click)="sortTable(2)">Website</th>
+      </tr>
+
+      <tr *ngFor="let row of artists" (click)="preview('artist', row)">
+        <td>{{row.artist_id}}</td>
+        <td class="artistName" (click)="getTracks('', '', '',  row.artist_name)">{{row.artist_name}}</td>
+        <td><a [href]="row.artist_website">Link to Website</a></td>
       </tr>
     </table>
   </ng-container>

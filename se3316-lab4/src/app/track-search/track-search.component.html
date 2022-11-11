@@ -1,15 +1,15 @@
 <div class="searchContainer">
-  <form name="searchForm" id="searchForm">
+  <form name="searchForm" id="searchForm" (submit)="search($event, track.value, artist.value, album.value); track.value = ''; artist.value = ''; album.value = ''">
     <div class="searchBox">
-      <input name="trackName" type="text" placeholder="Search by Track">
+      <input name="trackName" type="text" placeholder="Search by Track" #track>
       <input type="submit" class="searchBtn" value="">
     </div>
     <div class="searchBox">
-      <input name="artistName" type="text" placeholder="Search by Artist">
+      <input name="artistName" type="text" placeholder="Search by Artist" #artist>
       <input type="submit" class="searchBtn" value="">
     </div>
     <div class="searchBox">
-      <input name="albumName" type="text" placeholder="Search by Album">
+      <input name="albumName" type="text" placeholder="Search by Album" #album>
       <input type="submit" class="searchBtn" value="">
     </div>
   </form>

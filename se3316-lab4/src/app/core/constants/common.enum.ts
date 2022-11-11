@@ -22,7 +22,12 @@ export interface Track {
 }
 
 export interface Artist {
-
+  artist_id: number,
+  artist_name: string,
+  artist_website: string,
+  artist_active_year_begin?: string,
+  artist_members?: string,
+  artist_handle?: string,
 }
 
 export interface Playlist {

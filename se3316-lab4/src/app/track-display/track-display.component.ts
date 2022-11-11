@@ -22,6 +22,13 @@ export class TrackDisplayComponent implements OnInit {
 
   ngOnInit(): void {
     this.getGenres();
+
+    // Wait for search parameters
+    this.musicService.searchParams$.subscribe((val: {trackTitle: string, artistTitle: string, albumTitle: string}) => {
+      if (val.trackTitle || val.albumTitle) this.getTracks(val.trackTitle, val.albumTitle, '', '');
+      else if (val.artistTitle) this.getArtists(val.artistTitle);
+      else { this.tracks = []; this.artists = []; }
+    });
   }
 
   // Get and display the genres
@@ -37,7 +44,18 @@ export class TrackDisplayComponent implements OnInit {
   getTracks(trackTitle?: string, albumTitle?: string, genreTitle?: string, artistName?: string): void {
     this.spinner.show();
     this.musicService.getTracks(trackTitle, albumTitle, genreTitle, artistName).subscribe(res => {
+      this.artists = [];
       this.tracks = res;
+      this.spinner.hide();
+    }, error => console.log(error));
+  }
+
+  // Get and display artists
+  getArtists(artistName: string): void {
+    this.spinner.show();
+    this.musicService.getArtists(artistName).subscribe(res => {
+      this.tracks = [];
+      this.artists = res;
       this.spinner.hide();
     }, error => console.log(error));
   }

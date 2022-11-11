@@ -114,7 +114,7 @@ app.get('/api/v1/music/tracks', (req, res) => {
                     ((trackTitle && row['track_title'].toLowerCase().includes(trackTitle.toLocaleLowerCase())) ||
                     (albumTitle && row['album_title'].toLowerCase().includes(albumTitle.toLocaleLowerCase())) ||
                     (genreTitle && row['track_genres'].includes(genreTitle)) ||
-                    (artistName && row['artist_name'].toLowerCase().includes(artistName.toLocaleLowerCase())))) {
+                    (artistName && row['artist_name'].toLowerCase() == artistName.toLocaleLowerCase()))) {
                     returnObj.push({
                       trackID: row['track_id'],
                       albumId: row['album_id'],

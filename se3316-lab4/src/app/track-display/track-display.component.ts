@@ -29,7 +29,7 @@ export class TrackDisplayComponent implements OnInit {
     this.spinner.show();
     this.musicService.getGenres().subscribe(res => {
       this.genres = res;
-      //this.spinner.hide();
+      this.spinner.hide();
     }, error => console.log(error));
   }
 

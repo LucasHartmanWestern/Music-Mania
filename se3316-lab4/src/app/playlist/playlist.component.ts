@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { MusicService } from "../core/services/music/music.service";
+import { Artist, Track } from "../core/constants/common.enum";
 
 @Component({
   selector: 'app-playlist',
@@ -7,9 +9,22 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PlaylistComponent implements OnInit {
 
-  constructor() { }
+  previewTrack: any = null;
+  previewArtist: any = null;
+
+  constructor(private musicService: MusicService) { }
 
   ngOnInit(): void {
+
+    // Run when preview is set
+    this.musicService.previewSelection$.subscribe((val: {preview: Track | Artist, type: string}) => {
+      // Handle when track preview is set
+      if(val?.type == "track"){
+        this.previewTrack = val.preview;
+      } else {
+        this.previewArtist = val.preview;
+      }
+    });
   }
 
 }

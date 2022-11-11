@@ -7,6 +7,10 @@ import { TrackSearchComponent } from './track-search/track-search.component';
 import { TrackDisplayComponent } from './track-display/track-display.component';
 import { PlaylistComponent } from './playlist/playlist.component';
 import { PlaylistSelectorComponent } from './modals/playlist-selector/playlist-selector.component';
+import { HttpClientModule } from "@angular/common/http";
+import { NgbActiveModal, NgbModal, NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgxSpinnerModule } from 'ngx-spinner';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [
@@ -18,9 +22,13 @@ import { PlaylistSelectorComponent } from './modals/playlist-selector/playlist-s
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule,
+    NgbModule,
+    NgxSpinnerModule,
+    BrowserAnimationsModule
   ],
-  providers: [],
+  providers: [NgbActiveModal, NgbModal],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

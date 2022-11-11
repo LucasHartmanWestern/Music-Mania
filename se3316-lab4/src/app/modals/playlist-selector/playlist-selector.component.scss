@@ -1,5 +1,5 @@
-dialog {
-  width: 50%;
+.listAdder {
+  width: 100%;
   min-height: 500px;
   border: none;
   border-radius: 12px;
@@ -31,5 +31,14 @@ dialog {
 
   span:hover:not(.trackTitle) {
     background-color: #ecf0f1;
+  }
+
+  .close {
+    outline: none;
+    border: 1px solid #E74C3C;
+    color: #E74C3C;
+    border-radius: 12px;
+    background-color: #FFFFFF;
+    width: 120px;
   }
 }

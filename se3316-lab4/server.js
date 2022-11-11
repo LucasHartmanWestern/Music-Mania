@@ -26,7 +26,7 @@ app.get('/api/v1/music/genres', (req, res) => {
     let returnObj = [];
 
     // Loop through all genres and return an array of their info
-    fs.createReadStream('./lab3-data/genres.csv')
+    fs.createReadStream('storage/lab3-data/genres.csv')
         .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
         .on('data', (row) => {
             returnObj.push(row);
@@ -49,7 +49,7 @@ app.get('/api/v1/music/artists/:id', (req, res) => {
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
         // Loop through artists and return all details of artist once found
-        fs.createReadStream('./lab3-data/raw_artists.csv')
+        fs.createReadStream('storage/lab3-data/raw_artists.csv')
             .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
             .on('data', (row) => {
                 if (row['artist_id'] == req.params.id) {
@@ -66,46 +66,6 @@ app.get('/api/v1/music/artists/:id', (req, res) => {
     }
 });
 
-// Get various details for a given track ID
-app.get('/api/v1/music/tracks/:id', (req, res) => {
-    // Retrieve and verify input parameters
-    const schema = Joi.number().required();
-    const result = Joi.validate(req.params.id, schema);
-    let found = false;
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Loop through tracks and return specific details once the track is found
-        fs.createReadStream('./lab3-data/raw_tracks.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (row['track_id'] == req.params.id) {
-                    res.send({
-                        trackID: row['track_id'],
-                        albumId: row['album_id'],
-                        albumTitle: row['album_title'],
-                        artistName: row['artist_name'],
-                        tags: row['tags'],
-                        trackDateCreated: row['track_date_created'],
-                        trackDateRecorded: row['track_date_recorded'],
-                        trackDuration: row['track_duration'],
-                        trackGenres: row['track_genres'],
-                        trackNumber: row['track_number'],
-                        trackTitle: row['track_title'],
-                        trackImage: row['track_image_file']
-                    });
-                    found = true;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (!found) res.status(404).send('No track with that ID were found');
-            });
-    }
-});
-
 // Get the first n number of matching track IDs for a given search pattern matching the track title or album
 // If the number of matches is less than n, then return all matches
 app.get('/api/v1/music/tracks', (req, res) => {
@@ -115,27 +75,27 @@ app.get('/api/v1/music/tracks', (req, res) => {
     const genreTitle = req.query['genre_title'];
     const artistName = req.query['artist_name'];
     const limit = req.query['limit'];
-    const schema = Joi.alternatives().try({ 
-        lim: Joi.number().min(1).required(), 
-        track_title: Joi.string().required(), 
+    const schema = Joi.alternatives().try({
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string().required(),
         album_title: Joi.string(),
         genre_title: Joi.string(),
         artist_name: Joi.string()
     }, {
-        lim: Joi.number().min(1).required(), 
-        track_title: Joi.string(), 
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
         album_title: Joi.string().required(),
         genre_title: Joi.string(),
         artist_name: Joi.string()
     }, {
-        lim: Joi.number().min(1).required(), 
-        track_title: Joi.string(), 
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
         album_title: Joi.string(),
         genre_title: Joi.string().required(),
         artist_name: Joi.string()
     }, {
-        lim: Joi.number().min(1).required(), 
-        track_title: Joi.string(), 
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
         album_title: Joi.string(),
         genre_title: Joi.string(),
         artist_name: Joi.string().required()
@@ -147,7 +107,7 @@ app.get('/api/v1/music/tracks', (req, res) => {
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
         // Loop through all tracks and return any matching tracks
-        fs.createReadStream('./lab3-data/raw_tracks.csv')
+        fs.createReadStream('storage/lab3-data/raw_tracks.csv')
             .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
             .on('data', (row) => {
                 if (count < limit &&
@@ -155,7 +115,20 @@ app.get('/api/v1/music/tracks', (req, res) => {
                     (albumTitle && row['album_title'].toLowerCase().includes(albumTitle.toLocaleLowerCase())) ||
                     (genreTitle && row['track_genres'].includes(genreTitle)) ||
                     (artistName && row['artist_name'].toLowerCase().includes(artistName.toLocaleLowerCase())))) {
-                    returnObj.push({trackID: row['track_id']});
+                    returnObj.push({
+                      trackID: row['track_id'],
+                      albumId: row['album_id'],
+                      albumTitle: row['album_title'],
+                      artistName: row['artist_name'],
+                      tags: row['tags'],
+                      trackDateCreated: row['track_date_created'],
+                      trackDateRecorded: row['track_date_recorded'],
+                      trackDuration: row['track_duration'],
+                      trackGenres: row['track_genres'],
+                      trackNumber: row['track_number'],
+                      trackTitle: row['track_title'],
+                      trackImage: row['track_image_file']
+                    });
                     count++;
                 }
             })
@@ -182,11 +155,11 @@ app.get('/api/v1/music/artists', (req, res) => {
     else {
         let counter = 0;
         // Loop through artist list and return the artists found
-        fs.createReadStream('./lab3-data/raw_artists.csv')
+        fs.createReadStream('storage/lab3-data/raw_artists.csv')
             .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
             .on('data', (row) => {
                 if (row['artist_name'].toLowerCase().includes(name.toLocaleLowerCase()) && counter <= limit) {
-                    returnObj.push({artistID: row['artist_id']});
+                    returnObj.push(row);
                     counter++;
                 }
             })
@@ -236,7 +209,7 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
             await storage.setItem(listName, req.body);
             res.send(await storage.getItem(listName));
         }
-    } 
+    }
 });
 
 // Get the list of track IDs for a given list
@@ -294,7 +267,7 @@ app.get('/api/v1/music/lists', (req, res) => {
         });
     }
     // Loop through all tracks to get track duration
-    fs.createReadStream('./lab3-data/raw_tracks.csv')
+    fs.createReadStream('storage/lab3-data/raw_tracks.csv')
             .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
             .on('data', (row) => {
                 // Check if any list has this specfic track, and update the duration accordingly

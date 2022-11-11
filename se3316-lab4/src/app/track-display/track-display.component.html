@@ -1,1 +1,40 @@
-<div class="resultsContainer"></div>
+<div class="resultsContainer">
+
+  <!-- Genre display -->
+  <ng-container *ngIf="!tracks.length">
+    <ul>
+      <li *ngFor="let genre of genres" (click)="getTracks('', '', genre.title)">
+        <div class="genre">
+          <span class="title">{{genre.title}}</span>
+          <span>{{genre['#tracks']}} tracks</span>
+          <span>{{genre.genre_id}}</span>
+          <span>Parent: {{genre.parent}}</span>
+        </div>
+      </li>
+    </ul>
+  </ng-container>
+
+  <!-- Track display -->
+  <ng-container *ngIf="tracks.length">
+    <table>
+      <tr class="headers">
+        <th (click)="sortTable(0)">#</th>
+        <th></th>
+        <th (click)="sortTable(2)">Title</th>
+        <th (click)="sortTable(3)">Album</th>
+        <th (click)="sortTable(4)">Duration</th>
+        <th></th>
+      </tr>
+
+      <tr *ngFor="let row of tracks" (click)="preview('track', row)">
+        <td>{{row.trackID}}</td>
+        <td><img [src]="row.trackImage" onerror="this.src='http://www.kurin.com/wp-content/uploads/placeholder-square.jpg'" class="trackImage"></td>
+        <td>{{row.trackTitle}}</td>
+        <td>{{row.albumTitle}}</td>
+        <td>{{row.trackDuration}}</td>
+        <td (click)="addToList(row)">+</td>
+      </tr>
+    </table>
+  </ng-container>
+
+</div>

@@ -24,4 +24,81 @@
       margin-left: 24px;
     }
   }
+
+  ul {
+    width: calc(100% - 8px);
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat( auto-fit, minmax(200px, 1fr) );
+    list-style-type: none;
+    justify-content: center;
+    align-content: center;
+
+    li {
+      text-align: center;
+      padding: 24px;
+      margin: 24px auto;
+      width: 175px;
+      height: 175px;
+      background-color: transparent;
+      box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+      border-radius: 18px;
+      transition: all 1s ease;
+      cursor: pointer;
+      font-size: small;
+
+      .genre {
+        .title {
+          font-size: large;
+        }
+        span {
+          display: block;
+          margin-bottom: 4px;
+        }
+      }
+    }
+  }
+
+  table {
+    width: 100%;
+
+    .headers {
+      font-size: 1.4rem;
+      background-color: white;
+      position: sticky;
+      top: 0;
+      box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+
+      th {
+        padding: 12px;
+        text-align: left;
+
+        &:hover {
+          background-color: #ecf0f1;
+        }
+      }
+    }
+    tr {
+      margin-bottom: 12px;
+      cursor: pointer;
+
+      &:hover:not(.headers) {
+        background-color: #ecf0f1;
+      }
+
+      td {
+        padding: 12px;
+
+        .trackImage {
+          height: 48px;
+          aspect-ratio: 1;
+        }
+      }
+
+      .artistName:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }

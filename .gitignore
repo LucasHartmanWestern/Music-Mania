@@ -42,6 +42,8 @@ Thumbs.db
 
 # Assets
 /src/assets/
+/se3316-lab4/storage/
+*.csv
 
 # Node
 node_modules/

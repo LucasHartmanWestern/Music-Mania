@@ -4,7 +4,7 @@
   <div class="lists">
     <div><button class="createList" [ngbPopover]="listNameCreator" placement="bottom" [autoClose]="'outside'" #selectorPopover="ngbPopover">+ Create new list</button></div>
 
-    <div *ngFor="let list of lists" class="list" (click)="readList(list.listName)">
+    <div *ngFor="let list of lists" class="list" (click)="readList(list)">
       <span class="listName">{{list.listName}}</span>
       <span>{{getListInfo(list)}}</span>
     </div>

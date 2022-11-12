@@ -25,8 +25,9 @@ export class PlaylistComponent implements OnInit {
       else this.previewAvailable = false;
     });
 
-    this.musicService.updatedList$.subscribe((val: {list: Playlist}) => {
-      this.lists[this.lists.findIndex((list: Playlist) => list === val.list)] = val.list;
+    this.musicService.updatedList$.subscribe((val: {list: Playlist, delete: boolean}) => {
+      if (!val.delete) this.lists[this.lists.findIndex((list: Playlist) => list === val.list)] = val.list;
+      else if (val.delete) this.lists.splice(this.lists.findIndex((list: Playlist) => list === val.list), 1);
     });
   }
 
@@ -40,9 +41,10 @@ export class PlaylistComponent implements OnInit {
     }, error => console.log(error));
   }
 
-  readList(listName: string): void {
+  readList(list: Playlist): void {
     this.spinner.show();
-    this.musicService.getLists(listName).subscribe(res => {
+    this.musicService.getLists(list.listName).subscribe(res => {
+      this.musicService.listTracks$.next({list: list, tracks: res});
       console.log(res);
       this.spinner.hide();
     }, error => console.log(error));

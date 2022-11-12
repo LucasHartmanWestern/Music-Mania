@@ -15,8 +15,9 @@ export class MusicService {
 
   previewSelection$: Subject <{ preview: Track | Artist | any, type: string }> = new Subject<{ preview: Track | Artist | any, type: string }>();
   searchParams$: Subject <{ trackTitle: string, artistTitle: string, albumTitle: string }> = new Subject<{ trackTitle: string, artistTitle: string, albumTitle: string }>();
-  lists$: Subject <{ lists: Playlist[] | any }> = new Subject<{ lists: Playlist[] }>();
-  updatedList$: Subject <{ list: Playlist | any }> = new Subject<{ list: Playlist }>();
+  lists$: Subject <{ lists: Playlist[] | any }> = new Subject<{ lists: Playlist[] | any }>();
+  updatedList$: Subject <{ list: Playlist | any, delete: boolean }> = new Subject<{ list: Playlist | any, delete: boolean }>();
+  listTracks$: Subject <{ list: Playlist, tracks: Track[] | any }> = new Subject<{ list: Playlist, tracks: Track[] | any }>();
 
   constructor(private http: HttpClient) { }
 
@@ -56,13 +57,19 @@ export class MusicService {
     );
   }
 
-  updateList(list: Playlist, track: Track): Observable<Playlist[]> {
-    console.log(list.trackList);
-
+  updateList(list: Playlist, tracks: any[]): Observable<Playlist[]> {
     return this.http.put(`${Constants.apiPaths.playlists}/${list.listName}/tracks`, {
-      "tracks": [parseInt(track?.trackID), ...list?.trackList?.map(track => parseInt(track))]
+      "tracks": [...tracks]
       }
     ).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteList(listName: string): Observable<Playlist[]> {
+    return this.http.delete(`${Constants.apiPaths.playlists}/${listName}`).pipe(
       map((res: any) => res)
     ).pipe(
       catchError(this.handleError)

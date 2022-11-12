@@ -16,6 +16,7 @@ export class TrackDisplayComponent implements OnInit {
   tracks: Track[] = [];
   artists: Artist[] = [];
   lists: Playlist[] = [];
+  selectedList: Playlist | any = null;
 
   sortTracking = {index: -1, sort: 'ASC'};
 
@@ -34,11 +35,16 @@ export class TrackDisplayComponent implements OnInit {
     this.musicService.lists$.subscribe((val: {lists: Playlist[]}) => {
       this.lists = val.lists;
     });
+
+    this.musicService.listTracks$.subscribe((val: {list: Playlist, tracks: Track[]}) => {
+      this.tracks = val.tracks;
+      this.selectedList = val.list;
+    });
   }
 
   // Get and display the genres
   getGenres(): void {
-    //this.spinner.show();
+    this.selectedList = null;
     this.musicService.getGenres().subscribe(res => {
       this.genres = res;
       //this.spinner.hide();
@@ -47,6 +53,7 @@ export class TrackDisplayComponent implements OnInit {
 
   // Get and display the tracks
   getTracks(trackTitle?: string, albumTitle?: string, genreTitle?: string, artistName?: string): void {
+    this.selectedList = null;
     this.spinner.show();
     this.musicService.getTracks(trackTitle, albumTitle, genreTitle, artistName).subscribe(res => {
       this.artists = [];
@@ -57,6 +64,7 @@ export class TrackDisplayComponent implements OnInit {
 
   // Get and display artists
   getArtists(artistName: string): void {
+    this.selectedList = null;
     this.spinner.show();
     this.musicService.getArtists(artistName).subscribe(res => {
       this.tracks = [];
@@ -72,16 +80,37 @@ export class TrackDisplayComponent implements OnInit {
     modalRef.componentInstance.lists = this.lists;
 
     modalRef.componentInstance.selectedPlaylist.subscribe((playlist: Playlist) => {
-      this.musicService.updateList(playlist, track).subscribe((res: any) => {
+      this.musicService.updateList(playlist, [parseInt(track?.trackID), ...playlist?.trackList?.map(track => parseInt(track))]).subscribe((res: any) => {
         playlist.trackList = res.tracks;
         // @ts-ignore
         playlist.totalPlayTime += parseInt(track.trackDuration.split(':')[0] * 60) + parseInt(track.trackDuration.split(':')[1]);
         playlist.trackCount += 1;
 
-        this.musicService.updatedList$.next({list: playlist});
+        this.musicService.updatedList$.next({list: playlist, delete: false});
       });
     });
+  }
 
+  // Open list selector modal and add to playlist
+  removeFromList(track: Track): void {
+    this.musicService.updateList(this.selectedList, this.selectedList?.trackList.filter((element: any) => element != track.trackID).map((e: string) => parseInt(e))).subscribe((res: any) => {
+      this.selectedList.trackList = res.tracks;
+      // @ts-ignore
+      this.selectedList.totalPlayTime -= parseInt(track.trackDuration.split(':')[0] * 60) + parseInt(track.trackDuration.split(':')[1]);
+      this.selectedList.trackCount -= 1;
+
+      this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+    });
+    this.tracks.splice(this.tracks.findIndex((t: Track) => t === track), 1);
+  }
+
+  deleteList(list: Playlist): void {
+    this.musicService.deleteList(list.listName).subscribe(res => {
+      console.log(res);
+    })
+    this.tracks = [];
+    this.musicService.updatedList$.next({list: this.selectedList, delete: true});
+    this.selectedList = null;
   }
 
   preview(type: string, preview: any): void {

@@ -16,6 +16,14 @@
 
   <!-- Track display -->
   <ng-container *ngIf="tracks.length">
+
+    <ng-container *ngIf="selectedList">
+      <div class="header">
+        <span>{{selectedList.listName}}</span>
+        <button (click)="deleteList(selectedList)">X</button>
+      </div>
+    </ng-container>
+
     <table>
       <tr class="headers">
         <th (click)="sortTable(0)">#</th>
@@ -32,7 +40,8 @@
         <td>{{row.trackTitle}}</td>
         <td>{{row.albumTitle}}</td>
         <td>{{row.trackDuration}}</td>
-        <td (click)="addToList(row)">+</td>
+        <td *ngIf="!selectedList" (click)="addToList(row)">+</td>
+        <td *ngIf="selectedList" (click)="removeFromList(row)">-</td>
       </tr>
     </table>
   </ng-container>

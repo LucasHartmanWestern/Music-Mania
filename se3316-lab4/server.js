@@ -23,6 +23,10 @@ app.use( (req, res, next) => {
 
 // Get all available genre names, IDs and parent IDs
 app.get('/api/v1/music/genres', (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
     let returnObj = [];
 
     // Loop through all genres and return an array of their info
@@ -37,38 +41,28 @@ app.get('/api/v1/music/genres', (req, res) => {
         .on('end', () => {
             res.send(returnObj);
         });
-});
 
-// Get the artist details (at least 6 key attributes) given  an artist ID
-app.get('/api/v1/music/artists/:id', (req, res) => {
-    // Retrieve and verify input parameters
-    const schema = Joi.number().required();
-    const result = Joi.validate(req.params.id, schema);
-    let found = false;
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Loop through artists and return all details of artist once found
-        fs.createReadStream('storage/lab3-data/raw_artists.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (row['artist_id'] == req.params.id) {
-                    res.send(row);
-                    found = true;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (!found) res.status(404).send('No artist with that ID were found');
-            });
-    }
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //      "genre_id": int,
+    //      "#tracks": int,
+    //      "parent": int,
+    //      "title": string,
+    //      "top_level": int
+    //    }
+    //   ...
+    // ]
 });
 
 // Get the first n number of matching track IDs for a given search pattern matching the track title or album
 // If the number of matches is less than n, then return all matches
 app.get('/api/v1/music/tracks', (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
     // Retrieve and verify input parameters
     const trackTitle = req.query['track_title'];
     const albumTitle = req.query['album_title'];
@@ -140,10 +134,34 @@ app.get('/api/v1/music/tracks', (req, res) => {
                 else res.send(returnObj);
             });
     }
+
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //     "trackID": int,
+    //     "albumId": int,
+    //     "albumTitle": string,
+    //     "artistName": string,
+    //     "tags": string,
+    //     "trackDateCreated": "MM/DD/YYYY HH:MM",
+    //     "trackDateRecorded": "MM/DD/YYYY",
+    //     "trackDuration": "MM:SS",
+    //     "trackGenres": string,
+    //     "trackNumber": int,
+    //     "trackTitle": string,
+    //     "trackImage": string (URL)
+    //   }
+    //   ...
+    // ]
 });
 
 // Get all the matching artist IDs for a given search pattern matching the artist's name
 app.get('/api/v1/music/artists', (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
     // Retrieve and verify input parameters
     const name = req.query['name'];
     const limit = req.query['limit'];
@@ -171,11 +189,48 @@ app.get('/api/v1/music/artists', (req, res) => {
                 else res.send(returnObj);
             });
     }
+
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //     "artist_id": int,
+    //     "artist_active_year_begin": string,
+    //     "artist_active_year_end": string,
+    //     "artist_associated_labels": string,
+    //     "artist_bio": string,
+    //     "artist_comments": string,
+    //     "artist_contact": string,
+    //     "artist_date_created": "MM/DD/YYYY HH:MM:SS AM/PM",
+    //     "artist_donation_url": string,
+    //     "artist_favorites": string,
+    //     "artist_flattr_name": string,
+    //     "artist_handle": string,
+    //     "artist_image_file": string (url),
+    //     "artist_images": string,
+    //     "artist_latitude": string,
+    //     "artist_location": string,
+    //     "artist_longitude": string,
+    //     "artist_members": string,
+    //     "artist_name": string,
+    //     "artist_paypal_name": string,
+    //     "artist_related_projects": string,
+    //     "artist_url": string (url),
+    //     "artist_website": string,
+    //     "artist_wikipedia_page": string,
+    //     "tags": string
+    //   }
+    //   ...
+    // ]
 });
 
 // Create a new list to save a list of tracks with a given list name
 // Return an error if name exists
 app.put('/api/v1/music/lists/:listName', async (req, res) => {
+
+    // Received Object Structure:
+    // tracks: []
+
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
     const schema = Joi.string().required().max(25);
@@ -190,12 +245,25 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
             res.send(await storage.getItem(listName));
         }
     }
+
+    // Sent Object Structure:
+    // {"tracks":[]}
 });
 
 // Save a list of track IDs to a given list name
 // Return an error if the list name does not exist
 // Replace existing track IDs with new values if the list exists
 app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
+
+    // Received Object Structure:
+    // {
+    //    tracks : [
+    //      ...
+    //      int
+    //      ...
+    //    ]
+    // }
+
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
     const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
@@ -210,10 +278,23 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
             res.send(await storage.getItem(listName));
         }
     }
+
+    // Sent Object Structure:
+    // {
+    //    "tracks" : [
+    //      ...
+    //      int
+    //      ...
+    //    ]
+    // }
 });
 
-// Get the list of track IDs for a given list
+// Get the list of track for a given list
 app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
     // Retrieve and verify input parameter
     let listName = req.params.listName;
     const schema = Joi.string().required();
@@ -257,11 +338,35 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
               });
         }
     }
+
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //      "trackID": int,
+    //      "albumId": int,
+    //      "albumTitle": string,
+    //      "artistName": string,
+    //      "tags": string,
+    //      "trackDateCreated": "MM/DD/YYYY HH:MM",
+    //      "trackDateRecorded": "MM/DD/YYYY HH:MM",
+    //      "trackDuration": "MM:SS",
+    //      "trackGenres": string,
+    //      "trackNumber": int,
+    //      "trackTitle": string,
+    //      "trackImage": string (url)
+    //   }
+    //   ...
+    // ]
 });
 
 // Delete a list of tracks with a given name
 // Return an error if the given list doesn’t exist
 app.delete('/api/v1/music/lists/:listName', async (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
     // Retrieve and verify input parameter
     let listName = req.params.listName;
     const schema = Joi.string().required();
@@ -277,10 +382,22 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
             res.send(deletedVal);
         }
     }
+
+    // Sent Object Structure:
+    // {
+    //    "tracks" : [
+    //      ...
+    //      int
+    //      ...
+    //    ]
+    // }
 });
 
 // Get a list of list names, number of tracks that are saved in each list and the total play time of each list
 app.get('/api/v1/music/lists', async (req, res) => {
+
+    // Received Object Structure:
+    // N/A
 
     // Get saved list info
     let entries = {
@@ -314,6 +431,22 @@ app.get('/api/v1/music/lists', async (req, res) => {
                 // Send the returnList
                 res.send(returnList);
             });
+
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //     "listName": string,
+    //     "trackCount": int,
+    //     "trackList": [
+    //        ...
+    //        int
+    //        ...
+    //      ],
+    //     "totalPlayTime": int
+    //   }
+    //   ...
+    // ]
 });
 
 // Listen to the specified port

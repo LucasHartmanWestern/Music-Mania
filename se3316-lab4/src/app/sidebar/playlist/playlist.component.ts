@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { MusicService } from "../../core/services/music/music.service";
 import { NgxSpinnerService } from "ngx-spinner";
-import { Playlist } from "../../core/constants/common.enum";
+import { Credentials, Playlist } from "../../core/constants/common.enum";
 
 @Component({
   selector: 'app-playlist',
@@ -10,8 +10,11 @@ import { Playlist } from "../../core/constants/common.enum";
 })
 export class PlaylistComponent implements OnInit {
 
+  @Output() logout = new EventEmitter<Credentials>();
+
   previewAvailable: boolean = false;
   lists: Playlist[] | any = null;
+  accessLevel: number = parseInt(localStorage.getItem('credAccess') || '0');
 
   constructor(private musicService: MusicService,  private spinner: NgxSpinnerService) { }
 
@@ -72,6 +75,13 @@ export class PlaylistComponent implements OnInit {
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});
     this.musicService.searchParams$.next({trackTitle: '', artistTitle: '', albumTitle: ''});
+  }
+
+  logoutOfApp(): void {
+    this.logout.emit({user: null, pass: null, access_level: null});
+    localStorage.removeItem('credUser');
+    localStorage.removeItem('credPass');
+    localStorage.removeItem('credAccess');
   }
 
 }

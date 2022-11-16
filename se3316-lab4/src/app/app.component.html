@@ -1,24 +1,30 @@
-<div class="track-page">
+<ng-container *ngIf="credentials.user">
+  <div class="track-page">
 
-  <div class="sidebar">
+    <div class="sidebar">
 
-    <app-sidebar></app-sidebar>
+      <app-sidebar (logout)="credentials = $event"></app-sidebar>
+
+    </div>
+
+    <div class="main">
+
+      <app-track-search></app-track-search>
+
+      <app-track-display></app-track-display>
+
+    </div>
+
+    <div class="references">
+      <span>Music data from: <a href="https://arxiv.org/abs/1612.01840">https://arxiv.org/abs/1612.01840</a></span>
+    </div>
 
   </div>
+</ng-container>
 
-  <div class="main">
-
-    <app-track-search></app-track-search>
-
-    <app-track-display></app-track-display>
-
-  </div>
-
-  <div class="references">
-    <span>Music data from: <a href="https://arxiv.org/abs/1612.01840">https://arxiv.org/abs/1612.01840</a></span>
-  </div>
-
-</div>
+<ng-container *ngIf="!credentials.user">
+  <app-login (credentials)="credentials = $event"></app-login>
+</ng-container>
 
 <ngx-spinner bdColor="rgba(51,51,51,0.8)" size="large" color="#fff" type="ball-circus" [fullScreen] = "true">
   <p>Loading...</p>

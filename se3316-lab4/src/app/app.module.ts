@@ -14,6 +14,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { PreviewComponent } from './sidebar/preview/preview.component';
 import { NgClass } from "@angular/common";
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { NgClass } from "@angular/common";
     PlaylistComponent,
     PlaylistSelectorComponent,
     SidebarComponent,
-    PreviewComponent
+    PreviewComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

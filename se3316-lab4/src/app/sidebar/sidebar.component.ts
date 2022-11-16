@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import { Credentials } from "../core/constants/common.enum";
 
 @Component({
   selector: 'app-sidebar',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SidebarComponent implements OnInit {
 
+  @Output() logout = new EventEmitter<Credentials>();
+
   constructor() { }
 
   ngOnInit(): void {
+  }
+
+  logoutOfApp(): void {
+    this.logout.emit({user: null, pass: null, access_level: null});
   }
 
 }

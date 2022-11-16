@@ -23,10 +23,9 @@ var con = mysql.createConnection({
 
 con.connect(function(err) {
     if (err) throw err;
-    console.log("Connected!");
+    console.log("Connected to DB");
     con.query("CREATE DATABASE music", function (err, result) {
       if (err) {
-        console.log("Database already created");
       } else {
         console.log("New database created");
       }
@@ -51,7 +50,7 @@ app.get('/api/v1/music/genres', (req, res) => {
     con.query(sql, function (err, result) {
         if (err) throw err;
         res.send(result);
-      });
+    });
 
     // Sent Object Structure:
     // [
@@ -458,6 +457,71 @@ app.get('/api/v1/music/lists', async (req, res) => {
     //   }
     //   ...
     // ]
+});
+
+// Validate login attempt
+app.post('/api/v1/login/credentials', (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //    username: string,
+  //    password: string
+  // }
+
+  const schema = { username: Joi.string().required(), password: Joi.string().required() };
+  const result = Joi.validate({ username: req.body.username, password: req.body.password }, schema);
+
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var sql = `SELECT * FROM music.credentials WHERE (username = '${req.body.username}' OR email = '${req.body.username}') AND password = '${req.body.password}'`;
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      if (result.length) {
+        if (result[0]?.status === 'Deactivated') res.status(400).send("Your account is no longer active, please contact the site administrator");
+        else res.send({access_level: result[0].access_level});
+      }
+      else res.status(400).send("Invalid Credentials");
+    });
+  }
+
+  // Sent Object Structure:
+  // access_level: int
+});
+
+// Create new account
+app.put('/api/v1/login/credentials', (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //    username: string,
+  //    email: string
+  //    password: string
+  // }
+
+  const schema = { username: Joi.string().required(), Email: Joi.string().email().required(), password: Joi.string().required() };
+  const result = Joi.validate({ username: req.body.username, Email: req.body.email, password: req.body.password }, schema);
+
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var existsCheck = `SELECT * FROM music.credentials WHERE username = '${req.body.username}' OR email = '${req.body.email}'`;
+    con.query(existsCheck, function (err, result) {
+      if (err) throw err;
+      if (result.length) res.status(400).send('Username or Email already taken');
+      else {
+        var sql = `INSERT INTO music.credentials (username, email, password) VALUES('${req.body.username}', '${req.body.email}', '${req.body.password}')`;
+        con.query(sql, function (err, result) {
+          if (err) {
+            res.send({access_level: 0});
+            throw err;
+          }
+          else res.send({access_level: 1});
+        });
+      }
+    });
+  }
+
+  // Sent Object Structure:
+  // access_level: int
 });
 
 // Listen to the specified port

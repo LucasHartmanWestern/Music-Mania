@@ -77,7 +77,6 @@ export class MusicService {
   }
 
   private handleError(err: HttpErrorResponse) {
-
     let errorMessage = '';
     if (err.error instanceof ErrorEvent) {
 
@@ -86,7 +85,6 @@ export class MusicService {
 
       errorMessage = `Server returned code: ${err.status}, error message is: ${err.message}`;
     }
-    console.error(errorMessage);
-    return throwError(errorMessage);
+    return throwError(err.error);
   }
 }

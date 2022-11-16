@@ -8,21 +8,27 @@ $image-path: '~src/assets/images/';
     height: 100% !important;
   }
 
-  .home {
+  .navBtns {
     height: 51px;
     margin: 12px;
     border-radius: 12px;
     background-color: white;
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    color: #ecf0f1;
 
-    .homeBtn {
+    .homeBtn, .logoutBtn {
       line-height: 51px;
-      width: 100%;
+      width: 45%;
       border: none;
       outline: none;
       background-color: transparent;
       font-size: 1.4rem;
       cursor: pointer;
+      color: black;
     }
   }
 

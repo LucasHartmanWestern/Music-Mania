@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const fs = require('fs');
+const mysql = require('mysql');
 const { parse } = require('csv-parse');
 const express = require('express');
 const storage = require('node-persist');
@@ -12,6 +13,25 @@ const port = process.env.PORT || 3000; // Specify port or use 3000 by default
 (async () => {
     await storage.init({dir: 'storage/music/'})
 })();
+
+var con = mysql.createConnection({
+    host: "localhost",
+    user: "user",
+    password: "listener",
+    multipleStatements : true
+});
+
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    con.query("CREATE DATABASE music", function (err, result) {
+      if (err) {
+        console.log("Database already created");
+      } else {
+        console.log("New database created");
+      }
+    });
+});
 
 // Add various headers to each request
 app.use( (req, res, next) => {
@@ -27,20 +47,11 @@ app.get('/api/v1/music/genres', (req, res) => {
     // Received Object Structure:
     // N/A
 
-    let returnObj = [];
-
-    // Loop through all genres and return an array of their info
-    fs.createReadStream('storage/lab3-data/genres.csv')
-        .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-        .on('data', (row) => {
-            returnObj.push(row);
-        })
-        .on('error', (error) => {
-            res.status(500).send(error.message);
-        })
-        .on('end', () => {
-            res.send(returnObj);
-        });
+    var sql = "SELECT * FROM music.genres";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        res.send(result);
+      });
 
     // Sent Object Structure:
     // [

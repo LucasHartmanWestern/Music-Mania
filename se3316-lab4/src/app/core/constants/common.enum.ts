@@ -36,3 +36,9 @@ export interface Playlist {
   trackList: any[],
   totalPlayTime: number
 }
+
+export interface Credentials {
+  access_level: number | null,
+  user: string | null,
+  pass: string | null
+}

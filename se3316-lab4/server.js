@@ -18,6 +18,7 @@ var con = mysql.createConnection({
     host: "localhost",
     user: "user",
     password: "listener",
+    database: "music",
     multipleStatements : true
 });
 
@@ -80,72 +81,13 @@ app.get('/api/v1/music/tracks', (req, res) => {
     const genreTitle = req.query['genre_title'];
     const artistName = req.query['artist_name'];
     const limit = req.query['limit'];
-    const schema = Joi.alternatives().try({
-        lim: Joi.number().min(1).required(),
-        track_title: Joi.string().required(),
-        album_title: Joi.string(),
-        genre_title: Joi.string(),
-        artist_name: Joi.string()
-    }, {
-        lim: Joi.number().min(1).required(),
-        track_title: Joi.string(),
-        album_title: Joi.string().required(),
-        genre_title: Joi.string(),
-        artist_name: Joi.string()
-    }, {
-        lim: Joi.number().min(1).required(),
-        track_title: Joi.string(),
-        album_title: Joi.string(),
-        genre_title: Joi.string().required(),
-        artist_name: Joi.string()
-    }, {
-        lim: Joi.number().min(1).required(),
-        track_title: Joi.string(),
-        album_title: Joi.string(),
-        genre_title: Joi.string(),
-        artist_name: Joi.string().required()
-    });
-    const result = Joi.validate({lim: limit, track_title: trackTitle, album_title: albumTitle, genre_title: genreTitle, artist_name: artistName}, schema);
-    let count = 0;
-    let returnObj = [];
 
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Loop through all tracks and return any matching tracks
-        fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (count < limit &&
-                    ((trackTitle && row['track_title'].toLowerCase().includes(trackTitle.toLocaleLowerCase())) ||
-                    (albumTitle && row['album_title'].toLowerCase().includes(albumTitle.toLocaleLowerCase())) ||
-                    (genreTitle && row['track_genres'].includes(genreTitle)) ||
-                    (artistName && row['artist_name'].toLowerCase() == artistName.toLocaleLowerCase()))) {
-                    returnObj.push({
-                      trackID: row['track_id'],
-                      albumId: row['album_id'],
-                      albumTitle: row['album_title'],
-                      artistName: row['artist_name'],
-                      tags: row['tags'],
-                      trackDateCreated: row['track_date_created'],
-                      trackDateRecorded: row['track_date_recorded'],
-                      trackDuration: row['track_duration'],
-                      trackGenres: row['track_genres'],
-                      trackNumber: row['track_number'],
-                      trackTitle: row['track_title'],
-                      trackImage: row['track_image_file']
-                    });
-                    count++;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (count == 0) res.status(404).send('No matching tracks found');
-                else res.send(returnObj);
-            });
-    }
-
+    const lim = parseInt(limit);
+    var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
+    con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
+        if (err) throw err;
+        res.send(result);
+      });
     // Sent Object Structure:
     // [
     //   ...
@@ -244,18 +186,15 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
 
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
-    const schema = Joi.string().required().max(25);
-    const result = Joi.validate(listName, schema);
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Check if the list exists, and if it doesn't create it
-        if (await storage.getItem(listName)) res.status(400).send('List already exists');
-        else {
-            await storage.setItem(listName,{"tracks":[]});
-            res.send(await storage.getItem(listName));
-        }
+    var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
+    var values = [[listName,0,'[]','00:00:00']];
+  con.query(sql,[values], function (err, result) {
+    if (err) {
+        res.send("Playlist already exists!");
+    } else {
+        res.send("Playlist created");
     }
+  });
 
     // Sent Object Structure:
     // {"tracks":[]}
@@ -277,18 +216,25 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
-    const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
-    const result = Joi.validate({list: listName, body: req.body}, schema);
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Check if list exists, and if it does replace the tracklist
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            await storage.setItem(listName, req.body);
-            res.send(await storage.getItem(listName));
-        }
+    const {tracks} = req.body;
+    var sql = "UPDATE playlists SET trackCount = ? WHERE listName = ?"
+    var sql2 = "UPDATE playlists SET tracks = '[?]' WHERE listName = ?"
+    var sql3 = "UPDATE playlists " + 
+                    "SET totalPlayTime = ("+
+                    "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+ 
+                    "FROM tracks WHERE track_id IN (?)"+
+                    ")" + 
+                    "WHERE playlists.listName = ?"
+    var count = tracks.length;
+    var name = listName;
+  con.query(sql+";"+sql2+";"+sql3,[count,name,tracks,name, tracks,name,name], function (err, result) {
+    if (err) {
+        res.send(err)
+    } else {
+       res.send(req.body);
     }
+});
+    
 
     // Sent Object Structure:
     // {
@@ -313,42 +259,15 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     let trackIDs = [];
     let returnList = [];
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Check if list exists, and if it does return the tracks
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            trackIDs = await storage.getItem(listName);
-            // Loop through all tracks and return any matching tracks
-            fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-              .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-              .on('data', (row) => {
-                if (trackIDs.tracks.includes(parseInt(row['track_id']))) {
-                  returnList.push({
-                    trackID: row['track_id'],
-                    albumId: row['album_id'],
-                    albumTitle: row['album_title'],
-                    artistName: row['artist_name'],
-                    tags: row['tags'],
-                    trackDateCreated: row['track_date_created'],
-                    trackDateRecorded: row['track_date_recorded'],
-                    trackDuration: row['track_duration'],
-                    trackGenres: row['track_genres'],
-                    trackNumber: row['track_number'],
-                    trackTitle: row['track_title'],
-                    trackImage: row['track_image_file']
-                  });
-                }
-              })
-              .on('error', (error) => {
-                res.status(500).send(error.message);
-              })
-              .on('end', () => {
-                res.send(returnList);
-              });
-        }
+    var sql = "SELECT tracks FROM playlists WHERE listName = ?";
+  con.query(sql,[listName], function (err, result) {
+    if (err) {
+        res.send("Playlist doesn't exist!");
+    } else {
+        res.send(result);
     }
+  });
+
 
     // Sent Object Structure:
     // [

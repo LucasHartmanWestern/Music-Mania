@@ -330,37 +330,14 @@ app.get('/api/v1/music/lists', async (req, res) => {
     // N/A
 
     // Get saved list info
-    let entries = {
-        keys: await storage.keys(),
-        values: await storage.values()
+    var sql = "SELECT * FROM playlists";
+  con.query(sql, function (err, result) {
+    if (err) {
+        res.send("Playlist doesn't exist!");
+    } else {
+        res.send(result);
     }
-    let returnList = [];
-
-
-    // Populate return list with default play time value
-    for (let i = 0; i < entries.keys.length; i++) {
-        returnList.push({
-            listName: entries.keys[i],
-            trackCount: entries.values[i].tracks.length || 0,
-            trackList: entries.values[i].tracks,
-            totalPlayTime: 0
-        });
-    }
-    // Loop through all tracks to get track duration
-    fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                // Check if any list has this specfic track, and update the duration accordingly
-                returnList.forEach(list => {
-                    if (list.trackList.includes(parseInt(row['track_id']))) {
-                        list.totalPlayTime += parseInt(row['track_duration'].split(':')[0] * 60) + parseInt(row['track_duration'].split(':')[1]);
-                    }
-                })
-            })
-            .on('end', () => {
-                // Send the returnList
-                res.send(returnList);
-            });
+  });
 
     // Sent Object Structure:
     // [

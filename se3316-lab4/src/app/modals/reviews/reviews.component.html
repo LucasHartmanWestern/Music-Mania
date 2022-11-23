@@ -7,6 +7,10 @@
     <h1>This is not a list</h1>
   </ng-container>
 
+  <div class="stars d-flex justify-content-center mb-3">
+    <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= rating() ? '★' : '☆'}}</span>
+  </div>
+
   <div class="reviewBody">
     <div *ngFor="let review of data.reviews; index as i" class="review" [ngClass]="{'border-bottom': (i !== (data.reviews.length - 1))}">
       <span class="body">{{review.reviewBody}}</span>
@@ -18,8 +22,16 @@
   </div>
 
   <ng-container *ngIf="accessLvl > 0">
-    <form (submit)="createReview($event, text.value); text.value = '';">
+    <form (submit)="createReview($event, text.value, rating.value); text.value = '';">
       <label>Submit your own review</label>
+      <select #rating>
+        <option value="0">0 Stars</option>
+        <option value="1">1 Stars</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
       <textarea type="text" placeholder="Write review here..." #text></textarea>
       <input type="submit">
     </form>

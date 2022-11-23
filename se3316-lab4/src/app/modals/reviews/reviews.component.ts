@@ -23,7 +23,17 @@ export class ReviewsComponent implements OnInit {
     this.accessLvl = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
   }
 
-  createReview(event: any, review: string): void {
+  rating(): number {
+    let reviewCount: number = 0;
+    let reviewSum: number = 0;
+    this.data.reviews.forEach((review: any) => {
+      reviewCount++;
+      reviewSum += review.reviewRating;
+    });
+    return reviewSum / reviewCount;
+  }
+
+  createReview(event: any, review: string, rating: any): void {
     event.preventDefault();
     if (!review.length) return;
 
@@ -31,9 +41,9 @@ export class ReviewsComponent implements OnInit {
     this.data.reviews.push({
       reviewBody: review,
       reviewAuthor: this.username,
-      reviewDateTime: `${[currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()].join('-')} ${[currentDate.getHours(), currentDate.getMinutes()].join(':')}`
+      reviewDateTime: `${[currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()].join('-')} ${[currentDate.getHours(), currentDate.getMinutes()].join(':')}`,
+      reviewRating: parseInt(rating)
     });
-    console.log(review);
   }
 
   close(): void {

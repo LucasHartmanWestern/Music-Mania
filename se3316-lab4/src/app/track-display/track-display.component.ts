@@ -76,8 +76,8 @@ export class TrackDisplayComponent implements OnInit {
 
   openReview(whatToReview: any, list: boolean) {
     whatToReview['reviews'] = [
-      {reviewAuthor: "username1", reviewBody: "This is a test review body test test test", reviewDateTime: "2022-01-01 13:30"},
-      {reviewAuthor: "username2", reviewBody: "This is a test 2 review body test test test", reviewDateTime: "2022-01-02 14:30"}
+      {reviewAuthor: "username1", reviewBody: "This is a test review body test test test", reviewDateTime: "2022-01-01 13:30", reviewRating: 3},
+      {reviewAuthor: "username2", reviewBody: "This is a test 2 review body test test test", reviewDateTime: "2022-01-02 14:30", reviewRating: 1}
     ];
     console.log(whatToReview);
 

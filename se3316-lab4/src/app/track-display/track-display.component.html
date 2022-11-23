@@ -41,6 +41,7 @@
         <th (click)="sortTable(3)">Album</th>
         <th (click)="sortTable(4)">Duration</th>
         <th></th>
+        <th></th>
       </tr>
 
       <tr *ngFor="let row of tracks" (click)="preview('track', row)">
@@ -49,6 +50,7 @@
         <td>{{row.trackTitle}}</td>
         <td>{{row.albumTitle}}</td>
         <td>{{row.trackDuration}}</td>
+        <td><a href="https://www.youtube.com/results?search_query={{row.trackTitle}}" target="_blank">Listen</a></td>
         <td *ngIf="!selectedList" (click)="addToList(row)">+</td>
         <td *ngIf="selectedList" (click)="removeFromList(row)">-</td>
       </tr>

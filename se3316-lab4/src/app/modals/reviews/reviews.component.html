@@ -1,0 +1,32 @@
+<div class="modalBody">
+  <ng-container *ngIf="list">
+    <h1>{{data.listName}} Reviews</h1>
+  </ng-container>
+
+  <ng-container *ngIf="!list">
+    <h1>This is not a list</h1>
+  </ng-container>
+
+  <div class="reviewBody">
+    <div *ngFor="let review of data.reviews; index as i" class="review" [ngClass]="{'border-bottom': (i !== (data.reviews.length - 1))}">
+      <span class="body">{{review.reviewBody}}</span>
+      <div class="reviewDetails">
+        <span>{{review.reviewAuthor}}</span>
+        <span>{{review.reviewDateTime}}</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="accessLvl > 0">
+    <form (submit)="createReview($event, text.value); text.value = '';">
+      <label>Submit your own review</label>
+      <textarea type="text" placeholder="Write review here..." #text></textarea>
+      <input type="submit">
+    </form>
+  </ng-container>
+
+  <div class="close">
+    <button (click)="close()">Close</button>
+  </div>
+
+</div>

@@ -37,7 +37,7 @@ con.connect(function(err) {
     con.query("CREATE DATABASE music", function (err, result) {
       if (err) {
       } else {
-        console.log("New database created");
+        //console.log("New database created");
       }
     });
 });
@@ -51,7 +51,7 @@ app.use( (req, res, next) => {
     if(req.path !== '/api/v1/login/credentials') {
       let token = req.header('Authorization');
       jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
-        console.log(decoded);
+        //console.log(decoded);
       });
     }
     next();
@@ -499,7 +499,7 @@ app.post('/api/v1/login/credentials', (req, res) => {
         else {
           const token = jwt.sign({
             exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
-            username: req.body.username,
+            username: result[0]?.username,
             access_level: result[0].access_level
           }, process.env.JWT_KEY || 'se3316');
           res.send({jwt: token});

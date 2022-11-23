@@ -4,6 +4,7 @@ import {Artist, Genre, Playlist, Track} from "../core/constants/common.enum";
 import { PlaylistSelectorComponent } from "../modals/playlist-selector/playlist-selector.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
+import {ReviewsComponent} from "../modals/reviews/reviews.component";
 
 @Component({
   selector: 'app-track-display',
@@ -73,6 +74,18 @@ export class TrackDisplayComponent implements OnInit {
     }, error => console.log(error));
   }
 
+  openReview(whatToReview: any, list: boolean) {
+    whatToReview['reviews'] = [
+      {reviewAuthor: "username1", reviewBody: "This is a test review body test test test", reviewDateTime: "2022-01-01 13:30"},
+      {reviewAuthor: "username2", reviewBody: "This is a test 2 review body test test test", reviewDateTime: "2022-01-02 14:30"}
+    ];
+    console.log(whatToReview);
+
+    const modalRef = this.modalService.open(ReviewsComponent, {centered: true, windowClass: 'ReviewsModalClass'});
+    modalRef.componentInstance.data = whatToReview;
+    modalRef.componentInstance.list = list;
+  }
+
   // Open list selector modal and add to playlist
   addToList(track: Track): void {
     const modalRef = this.modalService.open(PlaylistSelectorComponent, {centered: true, windowClass: 'PlaylistSelectorModalClass'});
@@ -111,6 +124,13 @@ export class TrackDisplayComponent implements OnInit {
     this.tracks = [];
     this.musicService.updatedList$.next({list: this.selectedList, delete: true});
     this.selectedList = null;
+  }
+
+  renameList(event: any, newName: string): void {
+    if (newName) {
+      event.preventDefault();
+      this.selectedList.listName = newName;
+    }
   }
 
   preview(type: string, preview: any): void {

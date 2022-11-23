@@ -15,6 +15,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { PreviewComponent } from './sidebar/preview/preview.component';
 import { NgClass } from "@angular/common";
 import { LoginComponent } from './login/login.component';
+import { ReviewsComponent } from './modals/reviews/reviews.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { LoginComponent } from './login/login.component';
     PlaylistSelectorComponent,
     SidebarComponent,
     PreviewComponent,
-    LoginComponent
+    LoginComponent,
+    ReviewsComponent
   ],
   imports: [
     BrowserModule,

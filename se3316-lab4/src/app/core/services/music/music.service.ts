@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { Genre, Track, Artist, Playlist } from "../../constants/common.enum";
@@ -19,38 +19,42 @@ export class MusicService {
   updatedList$: Subject <{ list: Playlist | any, delete: boolean }> = new Subject<{ list: Playlist | any, delete: boolean }>();
   listTracks$: Subject <{ list: Playlist, tracks: Track[] | any }> = new Subject<{ list: Playlist, tracks: Track[] | any }>();
 
+  httpHeaders = new HttpHeaders({
+    'Authorization': localStorage.getItem('token') || 'N/A'
+  });
+
   constructor(private http: HttpClient) { }
 
   getGenres(): Observable<Genre[]> {
-    return this.http.get<Genre[]>(Constants.apiPaths.genres).pipe(
+    return this.http.get<Genre[]>(Constants.apiPaths.genres, {headers: this.httpHeaders}).pipe(
       map((data: Genre[]) => data),
       catchError(this.handleError)
     );
   }
 
   getTracks(trackTitle?: string, albumTitle?: string, genreTitle?: string, artistName?: string): Observable<Track[]> {
-    return this.http.get<Track[]>(`${Constants.apiPaths.tracks}?limit=${this.trackSearchLim}${trackTitle ? '&track_title=' + trackTitle : ''}${albumTitle ? '&album_title=' + albumTitle : ''}${genreTitle ? '&genre_title=' + genreTitle : ''}${artistName ? '&artist_name=' + artistName : ''}`).pipe(
+    return this.http.get<Track[]>(`${Constants.apiPaths.tracks}?limit=${this.trackSearchLim}${trackTitle ? '&track_title=' + trackTitle : ''}${albumTitle ? '&album_title=' + albumTitle : ''}${genreTitle ? '&genre_title=' + genreTitle : ''}${artistName ? '&artist_name=' + artistName : ''}`, {headers: this.httpHeaders}).pipe(
       map((data: Track[]) => data),
       catchError(this.handleError)
     );
   }
 
   getArtists(artistName: string): Observable<Artist[]> {
-    return this.http.get<Artist[]>(`${Constants.apiPaths.artists}?limit=${this.artistSearchLimit}&name=${artistName}`).pipe(
+    return this.http.get<Artist[]>(`${Constants.apiPaths.artists}?limit=${this.artistSearchLimit}&name=${artistName}`, {headers: this.httpHeaders}).pipe(
       tap(data => data),
       catchError(this.handleError)
     );
   }
 
   getLists(listName?: string): Observable<Playlist[]> {
-    return this.http.get<Playlist[]>(`${Constants.apiPaths.playlists}${listName ? '/' + listName + '/tracks' : ''}`).pipe(
+    return this.http.get<Playlist[]>(`${Constants.apiPaths.playlists}${listName ? '/' + listName + '/tracks' : ''}`, {headers: this.httpHeaders}).pipe(
       tap(data => data),
       catchError(this.handleError)
     );
   }
 
   createList(listName: string): Observable<Playlist[]> {
-    return this.http.put(`${Constants.apiPaths.playlists}/${listName}`, null).pipe(
+    return this.http.put(`${Constants.apiPaths.playlists}/${listName}`, null, {headers: this.httpHeaders}).pipe(
       map((res: any) => res)
     ).pipe(
       catchError(this.handleError)
@@ -60,7 +64,7 @@ export class MusicService {
   updateList(list: Playlist, tracks: any[]): Observable<Playlist[]> {
     return this.http.put(`${Constants.apiPaths.playlists}/${list.listName}/tracks`, {
       "tracks": [...tracks]
-      }
+      }, {headers: this.httpHeaders}
     ).pipe(
       map((res: any) => res)
     ).pipe(
@@ -69,7 +73,7 @@ export class MusicService {
   }
 
   deleteList(listName: string): Observable<Playlist[]> {
-    return this.http.delete(`${Constants.apiPaths.playlists}/${listName}`).pipe(
+    return this.http.delete(`${Constants.apiPaths.playlists}/${listName}`, {headers: this.httpHeaders}).pipe(
       map((res: any) => res)
     ).pipe(
       catchError(this.handleError)

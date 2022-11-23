@@ -38,7 +38,9 @@ export interface Playlist {
 }
 
 export interface Credentials {
-  access_level: number | null,
-  user: string | null,
-  pass: string | null
+  result?: string;
+  jwt?: string | null;
+  access_level?: number | null,
+  user?: string | null,
+  pass?: string | null
 }

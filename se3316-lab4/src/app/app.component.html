@@ -1,4 +1,4 @@
-<ng-container *ngIf="credentials.user">
+<ng-container *ngIf="credentials.jwt">
   <div class="track-page">
 
     <div class="sidebar">
@@ -22,7 +22,7 @@
   </div>
 </ng-container>
 
-<ng-container *ngIf="!credentials.user">
+<ng-container *ngIf="!credentials.jwt">
   <app-login (credentials)="credentials = $event"></app-login>
 </ng-container>
 

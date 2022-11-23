@@ -4,6 +4,8 @@ const mysql = require('mysql');
 const { parse } = require('csv-parse');
 const express = require('express');
 const storage = require('node-persist');
+const jwt = require('jsonwebtoken');
+const nodemailer = require("nodemailer");
 
 const app = express(); // Call express function to get Express type object
 app.use (express.json()); // Add middleware to enable json parsing
@@ -19,6 +21,14 @@ var con = mysql.createConnection({
     user: "user",
     password: "listener",
     multipleStatements : true
+});
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'canedhamburgers@gmail.com',
+    pass: 'zynropcdfvokqnqg'
+  }
 });
 
 con.connect(function(err) {
@@ -37,6 +47,13 @@ app.use( (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE');
     res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+    if(req.path !== '/api/v1/login/credentials') {
+      let token = req.header('Authorization');
+      jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+        console.log(decoded);
+      });
+    }
     next();
 });
 
@@ -478,7 +495,15 @@ app.post('/api/v1/login/credentials', (req, res) => {
       if (err) throw err;
       if (result.length) {
         if (result[0]?.status === 'Deactivated') res.status(400).send("Your account is no longer active, please contact the site administrator");
-        else res.send({access_level: result[0].access_level});
+        else if (result[0]?.status === 'Temp') res.status(400).send("Please verify your account to continue");
+        else {
+          const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
+            username: req.body.username,
+            access_level: result[0].access_level
+          }, process.env.JWT_KEY || 'se3316');
+          res.send({jwt: token});
+        }
       }
       else res.status(400).send("Invalid Credentials");
     });
@@ -489,7 +514,7 @@ app.post('/api/v1/login/credentials', (req, res) => {
 });
 
 // Create new account
-app.put('/api/v1/login/credentials', (req, res) => {
+app.put('/api/v1/login/credentials', async (req, res) => {
 
   // Received Object Structure:
   // {
@@ -508,13 +533,31 @@ app.put('/api/v1/login/credentials', (req, res) => {
       if (err) throw err;
       if (result.length) res.status(400).send('Username or Email already taken');
       else {
-        var sql = `INSERT INTO music.credentials (username, email, password) VALUES('${req.body.username}', '${req.body.email}', '${req.body.password}')`;
-        con.query(sql, function (err, result) {
+        var sql = `INSERT INTO music.credentials (username, email, password, status) VALUES('${req.body.username}', '${req.body.email}', '${req.body.password}', 'Temp')`;
+        con.query(sql, async function (err, result) {
           if (err) {
-            res.send({access_level: 0});
+            res.status(500);
             throw err;
           }
-          else res.send({access_level: 1});
+          const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
+            username: req.body.username,
+            password: req.body.password
+          }, process.env.JWT_KEY || 'se3316');
+
+          var mailOptions = {
+            from: 'canedhamburgers@gmail.com',
+            to: req.body.email,
+            subject: 'Verify Email Address for Music App',
+            text: `
+            Verify your email address using this link:
+            ${process.env.BASE_URL || 'http://localhost'}:3000/api/v1/login/credentials/verify/${token}
+            `
+          };
+
+          transporter.sendMail(mailOptions, (err, info) => {});
+
+          res.send({result: 'Success'});
         });
       }
     });
@@ -522,6 +565,19 @@ app.put('/api/v1/login/credentials', (req, res) => {
 
   // Sent Object Structure:
   // access_level: int
+});
+
+app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
+  let token = req.params.jwt;
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+
+    var sql = `UPDATE music.credentials SET status = 'Active' WHERE (username = '${decoded.username}') AND (password = '${decoded.password}');`;
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      else res.status(200).send('Your credentials have been verified, you can close this page.');
+    });
+  });
 });
 
 // Listen to the specified port

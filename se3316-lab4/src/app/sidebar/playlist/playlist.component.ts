@@ -14,7 +14,7 @@ export class PlaylistComponent implements OnInit {
 
   previewAvailable: boolean = false;
   lists: Playlist[] | any = null;
-  accessLevel: number = parseInt(localStorage.getItem('credAccess') || '0');
+  guest: boolean = (localStorage.getItem('token') !== 'guest');
 
   constructor(private musicService: MusicService,  private spinner: NgxSpinnerService) { }
 
@@ -78,10 +78,8 @@ export class PlaylistComponent implements OnInit {
   }
 
   logoutOfApp(): void {
-    this.logout.emit({user: null, pass: null, access_level: null});
-    localStorage.removeItem('credUser');
-    localStorage.removeItem('credPass');
-    localStorage.removeItem('credAccess');
+    this.logout.emit({jwt: null});
+    localStorage.removeItem('token');
   }
 
 }

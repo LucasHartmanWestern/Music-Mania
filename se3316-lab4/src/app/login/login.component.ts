@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Credentials } from "../core/constants/common.enum";
 import { AuthenticationService } from "../core/services/authentication/authentication.service";
-import {NgxSpinnerService} from "ngx-spinner";
+import { NgxSpinnerService } from "ngx-spinner";
 
 @Component({
   selector: 'app-login',
@@ -27,11 +27,9 @@ export class LoginComponent implements OnInit {
       this.spinner.show();
       this.authenticationService.login(username, password).subscribe(res => {
 
-        if (res?.access_level) {
-          this.credentials.emit({user: username, pass: password, access_level: res?.access_level});
-          localStorage.setItem('credUser', username);
-          localStorage.setItem('credPass', password);
-          localStorage.setItem('credAccess', res?.access_level?.toString() || '');
+        if (res?.jwt) {
+          this.credentials.emit({jwt: res?.jwt});
+          localStorage.setItem('token', res?.jwt);
         }
 
         this.spinner.hide();
@@ -51,10 +49,8 @@ export class LoginComponent implements OnInit {
       this.spinner.show();
       this.authenticationService.createAccount(username, email, password).subscribe(res => {
 
-        if (res.access_level) {
-          this.credentials.emit({user: username, pass: password, access_level: res?.access_level});
-          localStorage.setItem('credUser', username);
-          localStorage.setItem('credPass', password);
+        if (res?.result === 'Success') {
+          this.formType = 'Login';
         }
         else {
           this.error = "Something went wrong, please try again";
@@ -72,14 +68,10 @@ export class LoginComponent implements OnInit {
     // Assign guest account
     this.spinner.show();
 
-    this.credentials.emit({user: 'guest', pass: 'pass', access_level: 0});
-    localStorage.setItem('credUser', 'guest');
-    localStorage.setItem('credPass', 'pass');
-    localStorage.setItem('credAccess', '0');
+    this.credentials.emit({jwt: 'guest'});
+    localStorage.setItem('token', 'guest');
 
     this.spinner.hide();
-
-
   }
 
 }

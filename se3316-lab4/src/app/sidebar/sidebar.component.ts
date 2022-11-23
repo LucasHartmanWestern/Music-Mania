@@ -16,7 +16,7 @@ export class SidebarComponent implements OnInit {
   }
 
   logoutOfApp(): void {
-    this.logout.emit({user: null, pass: null, access_level: null});
+    this.logout.emit({jwt: null});
   }
 
 }

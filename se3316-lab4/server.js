@@ -218,7 +218,6 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
                     "cross join (SELECT * FROM music.tracks WHERE track_id IN (?)) det"
     var count = tracks.length;
     var name = listName;
-  con.query(sql+";"+sql2+";"+sql3,[count,name,tracks,name, tracks,name,name], function (err, result) {
   con.query(sql+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
     if (err) {
         res.send(err)
@@ -249,9 +248,8 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     const schema = Joi.string().required();
     const result = Joi.validate(listName, schema);
 
-    let trackIDs = [];
-    let returnList = [];
-    var sql = "SELECT tracks FROM playlists WHERE listName = ?";
+    var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
+     "track_duration, track_genres, track_image_file, track_number, track_title from listcontents where listName = ?";
   con.query(sql,[listName], function (err, result) {
     if (err) {
         res.send("Playlist doesn't exist!");
@@ -291,20 +289,16 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 
     // Retrieve and verify input parameter
     let listName = req.params.listName;
-    const schema = Joi.string().required();
-    const result = Joi.validate(listName, schema);
 
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        // Check that list exisits, and if it does delete it
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            const deletedVal = await storage.getItem(listName);
-            await storage.removeItem(listName);
-            res.send(deletedVal);
+    var sql = "DELETE FROM listcontents WHERE listName = ?"
+    var sql2 = "DELETE FROM playlists WHERE listName = ?"
+    con.query(sql+";"+sql2,[listName,listName], function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send("Playlist deleted");
         }
-    }
-
+      });
     // Sent Object Structure:
     // {
     //    "tracks" : [

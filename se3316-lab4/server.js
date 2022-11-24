@@ -580,5 +580,43 @@ app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
   });
 });
 
+app.get('/api/v1/login/credentials/all', async (req, res) => {
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level !== 3) return;
+
+    var sql = `SELECT username, email, status, access_level FROM music.credentials;`;
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      else {
+        res.status(200).send(result);
+      }
+    });
+  });
+});
+
+app.post('/api/v1/login/credentials/update', async (req, res) => {
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+
+    if (decoded.access_level !== 3) res.status(401);
+    else {
+      const schema = { newValue: Joi.string().required(), att: Joi.string().required() };
+      const result = Joi.validate({ newValue: req.body.newValue, att: req.body.att }, schema);
+
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql = `UPDATE music.credentials SET ${req.body.att} = '${req.body.newValue}' WHERE (username = '${req.body.user.username}') AND (email = '${req.body.user.email}');`;
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          else res.status(200);
+        });
+      }
+    }
+  });
+});
+
 // Listen to the specified port
 app.listen(port, () => console.log(`Listening on port ${port}...`));

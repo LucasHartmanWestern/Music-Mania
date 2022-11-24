@@ -14,5 +14,9 @@ select {
   font-size: 18px;
 }
 
+.UsersModalClass .modal-dialog {
+  max-width: 1000px !important;
+}
+
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';

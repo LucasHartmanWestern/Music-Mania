@@ -43,4 +43,7 @@ export interface Credentials {
   access_level?: number | null,
   user?: string | null,
   pass?: string | null
+  username?: string | null,
+  email?: string | null,
+  status?: string | null
 }

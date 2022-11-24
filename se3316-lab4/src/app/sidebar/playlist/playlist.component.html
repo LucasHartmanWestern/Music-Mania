@@ -1,7 +1,9 @@
 <!-- Sidebar to display lists and previews -->
 <div class="sidebar" [ngClass]="previewAvailable ? '' : 'big'">
   <div class="navBtns">
-    <button class="homeBtn" (click)="home()">Home</button> | <button class="logoutBtn" (click)="logoutOfApp()" [textContent]="guest ? 'Logout' : 'Login'"></button>
+    <button class="homeBtn" (click)="home()">Home</button>
+    |<button class="logoutBtn" (click)="logoutOfApp()" [textContent]="access_level == 0 ? 'Login' : 'Logout'"></button>
+    {{access_level == 3 ? '|' : ''}}<button *ngIf="access_level == 3" (click)="showUsers()">Users</button>
   </div>
   <div class="lists">
     <div><button class="createList" [ngbPopover]="listNameCreator" placement="bottom" [autoClose]="'outside'" #selectorPopover="ngbPopover">+ Create new list</button></div>

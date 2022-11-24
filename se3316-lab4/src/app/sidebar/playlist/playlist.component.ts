@@ -2,6 +2,10 @@ import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { MusicService } from "../../core/services/music/music.service";
 import { NgxSpinnerService } from "ngx-spinner";
 import { Credentials, Playlist } from "../../core/constants/common.enum";
+import { JwtHelperService } from "@auth0/angular-jwt";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import {ReviewsComponent} from "../../modals/reviews/reviews.component";
+import {UsersComponent} from "../../modals/users/users.component";
 
 @Component({
   selector: 'app-playlist',
@@ -14,9 +18,10 @@ export class PlaylistComponent implements OnInit {
 
   previewAvailable: boolean = false;
   lists: Playlist[] | any = null;
-  guest: boolean = (localStorage.getItem('token') !== 'guest');
+  helper = new JwtHelperService();
+  access_level: number = 0;
 
-  constructor(private musicService: MusicService,  private spinner: NgxSpinnerService) { }
+  constructor(private musicService: MusicService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     this.getLists();
@@ -32,6 +37,9 @@ export class PlaylistComponent implements OnInit {
       if (!val.delete) this.lists[this.lists.findIndex((list: Playlist) => list === val.list)] = val.list;
       else if (val.delete) this.lists.splice(this.lists.findIndex((list: Playlist) => list === val.list), 1);
     });
+
+    this.access_level = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
+    console.log(this.access_level);
   }
 
   // Get and display the genres
@@ -70,6 +78,10 @@ export class PlaylistComponent implements OnInit {
       minimumIntegerDigits: 2,
       useGrouping: false
     })} duration`;
+  }
+
+  showUsers(): void {
+    const modalRef = this.modalService.open(UsersComponent, {centered: true, windowClass: 'UsersModalClass'});
   }
 
   home(): void {

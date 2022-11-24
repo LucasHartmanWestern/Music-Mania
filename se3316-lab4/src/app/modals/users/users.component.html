@@ -1,0 +1,26 @@
+<div class="modal-body">
+
+  <div class="data">
+    <table>
+      <tr class="headers">
+        <th>Username</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Access</th>
+      </tr>
+
+      <tr *ngFor="let user of userList">
+        <td>{{user.username}}</td>
+        <td>{{user.email}}</td>
+        <td><input [placeholder]="user.status" (change)="changeMade(user, status.value, 'status')" #status></td>
+        <td><input [placeholder]="user.access_level" (change)="changeMade(user, access.value, 'access_level')" #access></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="buttons">
+    <button class="save" [disabled]="!changeList.length" [ngClass]="{'disabled': !this.changeList.length}" (click)="saveChanges()">Save changes</button>
+    <button class="close" (click)="close()">Close</button>
+  </div>
+
+</div>

@@ -81,6 +81,7 @@ app.get('/api/v1/music/tracks', (req, res) => {
     const genreTitle = req.query['genre_title'];
     const artistName = req.query['artist_name'];
     const limit = req.query['limit'];
+    const lim = parseInt(limit);
 
     const schema = Joi.alternatives().try({
         lim: Joi.number().min(1).required(),
@@ -108,12 +109,16 @@ app.get('/api/v1/music/tracks', (req, res) => {
         artist_name: Joi.string().required()
     });
 
-    const lim = parseInt(limit);
+    const result = Joi.validate({lim: limit, track_title: trackTitle, album_title: albumTitle, genre_title: genreTitle, artist_name: artistName}, schema);
+
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
     con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
         if (err) throw err;
         res.send(result);
       });
+    }
     // Sent Object Structure:
     // [
     //   ...

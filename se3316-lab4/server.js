@@ -118,30 +118,17 @@ app.get('/api/v1/music/artists', (req, res) => {
     // Retrieve and verify input parameters
     const name = req.query['name'];
     const limit = req.query['limit'];
-    let returnObj = [];
-    const schema = { limit: Joi.number().required(), name: Joi.string().required() };
-    const result = Joi.validate({ limit: limit, name: name }, schema);
-
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-        let counter = 0;
-        // Loop through artist list and return the artists found
-        fs.createReadStream('storage/lab3-data/raw_artists.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (row['artist_name'].toLowerCase().includes(name.toLocaleLowerCase()) && counter <= limit) {
-                    returnObj.push(row);
-                    counter++;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (!returnObj.length) res.status(404).send('No matching artists found');
-                else res.send(returnObj);
-            });
-    }
+    
+    const lim = parseInt(limit);
+    var sql = "SELECT * FROM artists WHERE LOCATE(?, artist_name) limit ?;";
+    con.query(sql,[name,lim], function (err, result) {
+        if (err) {
+            res.send (err);
+        } else {
+            res.send(result);
+        }
+        
+      });
 
     // Sent Object Structure:
     // [

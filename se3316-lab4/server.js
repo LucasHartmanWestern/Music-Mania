@@ -174,7 +174,7 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
     var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
-    var values = [[listName,0,'[]','00:00:00']];
+    var values = [[listName,0,'[]','00:00']];
   con.query(sql,[values], function (err, result) {
     if (err) {
         res.send("Playlist already exists!");
@@ -212,9 +212,14 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
                     "FROM tracks WHERE track_id IN (?)"+
                     ")" + 
                     "WHERE playlists.listName = ?"
+    var sql4 = "DELETE FROM listcontents WHERE listName = ?"
+    var sql5 = "INSERT INTO listcontents "+
+                    "SELECT * FROM(select listName from playlists where listName = ?) n"+ 
+                    "cross join (SELECT * FROM music.tracks WHERE track_id IN (?)) det"
     var count = tracks.length;
     var name = listName;
   con.query(sql+";"+sql2+";"+sql3,[count,name,tracks,name, tracks,name,name], function (err, result) {
+  con.query(sql+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
     if (err) {
         res.send(err)
     } else {

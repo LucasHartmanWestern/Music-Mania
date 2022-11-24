@@ -82,6 +82,32 @@ app.get('/api/v1/music/tracks', (req, res) => {
     const artistName = req.query['artist_name'];
     const limit = req.query['limit'];
 
+    const schema = Joi.alternatives().try({
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string().required(),
+        album_title: Joi.string(),
+        genre_title: Joi.string(),
+        artist_name: Joi.string()
+    }, {
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
+        album_title: Joi.string().required(),
+        genre_title: Joi.string(),
+        artist_name: Joi.string()
+    }, {
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
+        album_title: Joi.string(),
+        genre_title: Joi.string().required(),
+        artist_name: Joi.string()
+    }, {
+        lim: Joi.number().min(1).required(),
+        track_title: Joi.string(),
+        album_title: Joi.string(),
+        genre_title: Joi.string(),
+        artist_name: Joi.string().required()
+    });
+
     const lim = parseInt(limit);
     var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
     con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
@@ -119,6 +145,10 @@ app.get('/api/v1/music/artists', (req, res) => {
     const name = req.query['name'];
     const limit = req.query['limit'];
     
+    const schema = { limit: Joi.number().required(), name: Joi.string().required() };
+    const result = Joi.validate({ limit: limit, name: name }, schema);
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     const lim = parseInt(limit);
     var sql = "SELECT * FROM artists WHERE LOCATE(?, artist_name) limit ?;";
     con.query(sql,[name,lim], function (err, result) {
@@ -127,9 +157,8 @@ app.get('/api/v1/music/artists', (req, res) => {
         } else {
             res.send(result);
         }
-        
       });
-
+    }
     // Sent Object Structure:
     // [
     //   ...
@@ -173,6 +202,10 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
 
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
+    const schema = Joi.string().required().max(25);
+    const result = Joi.validate(listName, schema);
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
     var values = [[listName,0,'[]','00:00']];
   con.query(sql,[values], function (err, result) {
@@ -182,7 +215,7 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
         res.send("Playlist created");
     }
   });
-
+}
     // Sent Object Structure:
     // {"tracks":[]}
 });
@@ -204,6 +237,11 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
     const {tracks} = req.body;
+    const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
+    const result = Joi.validate({list: listName, body: req.body}, schema);
+
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     var sql = "UPDATE playlists SET trackCount = ? WHERE listName = ?"
     var sql2 = "UPDATE playlists SET tracks = '[?]' WHERE listName = ?"
     var sql3 = "UPDATE playlists " + 
@@ -225,7 +263,7 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
        res.send(req.body);
     }
 });
-    
+}    
 
     // Sent Object Structure:
     // {
@@ -248,6 +286,8 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     const schema = Joi.string().required();
     const result = Joi.validate(listName, schema);
 
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
      "track_duration, track_genres, track_image_file, track_number, track_title from listcontents where listName = ?";
   con.query(sql,[listName], function (err, result) {
@@ -257,7 +297,7 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
         res.send(result);
     }
   });
-
+}
 
     // Sent Object Structure:
     // [
@@ -289,7 +329,11 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 
     // Retrieve and verify input parameter
     let listName = req.params.listName;
+    const schema = Joi.string().required();
+    const result = Joi.validate(listName, schema);
 
+    if (result.error) res.status(400).send(result.error.details[0].message);
+    else {
     var sql = "DELETE FROM listcontents WHERE listName = ?"
     var sql2 = "DELETE FROM playlists WHERE listName = ?"
     con.query(sql+";"+sql2,[listName,listName], function (err, result) {
@@ -299,6 +343,7 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
             res.send("Playlist deleted");
         }
       });
+    }
     // Sent Object Structure:
     // {
     //    "tracks" : [

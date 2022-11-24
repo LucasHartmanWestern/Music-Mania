@@ -20,6 +20,7 @@ var con = mysql.createConnection({
     host: "localhost",
     user: "user",
     password: "listener",
+    database: "music",
     multipleStatements : true
 });
 
@@ -96,6 +97,8 @@ app.get('/api/v1/music/tracks', (req, res) => {
     const genreTitle = req.query['genre_title'];
     const artistName = req.query['artist_name'];
     const limit = req.query['limit'];
+    const lim = parseInt(limit);
+
     const schema = Joi.alternatives().try({
         lim: Joi.number().min(1).required(),
         track_title: Joi.string().required(),
@@ -121,47 +124,17 @@ app.get('/api/v1/music/tracks', (req, res) => {
         genre_title: Joi.string(),
         artist_name: Joi.string().required()
     });
+
     const result = Joi.validate({lim: limit, track_title: trackTitle, album_title: albumTitle, genre_title: genreTitle, artist_name: artistName}, schema);
-    let count = 0;
-    let returnObj = [];
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        // Loop through all tracks and return any matching tracks
-        fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (count < limit &&
-                    ((trackTitle && row['track_title'].toLowerCase().includes(trackTitle.toLocaleLowerCase())) ||
-                    (albumTitle && row['album_title'].toLowerCase().includes(albumTitle.toLocaleLowerCase())) ||
-                    (genreTitle && row['track_genres'].includes(genreTitle)) ||
-                    (artistName && row['artist_name'].toLowerCase() == artistName.toLocaleLowerCase()))) {
-                    returnObj.push({
-                      trackID: row['track_id'],
-                      albumId: row['album_id'],
-                      albumTitle: row['album_title'],
-                      artistName: row['artist_name'],
-                      tags: row['tags'],
-                      trackDateCreated: row['track_date_created'],
-                      trackDateRecorded: row['track_date_recorded'],
-                      trackDuration: row['track_duration'],
-                      trackGenres: row['track_genres'],
-                      trackNumber: row['track_number'],
-                      trackTitle: row['track_title'],
-                      trackImage: row['track_image_file']
-                    });
-                    count++;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (count == 0) res.status(404).send('No matching tracks found');
-                else res.send(returnObj);
-            });
+    var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
+    con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
+        if (err) throw err;
+        res.send(result);
+      });
     }
-
     // Sent Object Structure:
     // [
     //   ...
@@ -192,31 +165,21 @@ app.get('/api/v1/music/artists', (req, res) => {
     // Retrieve and verify input parameters
     const name = req.query['name'];
     const limit = req.query['limit'];
-    let returnObj = [];
+    
     const schema = { limit: Joi.number().required(), name: Joi.string().required() };
     const result = Joi.validate({ limit: limit, name: name }, schema);
-
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        let counter = 0;
-        // Loop through artist list and return the artists found
-        fs.createReadStream('storage/lab3-data/raw_artists.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                if (row['artist_name'].toLowerCase().includes(name.toLocaleLowerCase()) && counter <= limit) {
-                    returnObj.push(row);
-                    counter++;
-                }
-            })
-            .on('error', (error) => {
-                res.status(500).send(error.message);
-            })
-            .on('end', () => {
-                if (!returnObj.length) res.status(404).send('No matching artists found');
-                else res.send(returnObj);
-            });
+    const lim = parseInt(limit);
+    var sql = "SELECT * FROM artists WHERE LOCATE(?, artist_name) limit ?;";
+    con.query(sql,[name,lim], function (err, result) {
+        if (err) {
+            res.send (err);
+        } else {
+            res.send(result);
+        }
+      });
     }
-
     // Sent Object Structure:
     // [
     //   ...
@@ -262,17 +225,18 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     let listName = req.params.listName;
     const schema = Joi.string().required().max(25);
     const result = Joi.validate(listName, schema);
-
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        // Check if the list exists, and if it doesn't create it
-        if (await storage.getItem(listName)) res.status(400).send('List already exists');
-        else {
-            await storage.setItem(listName,{"tracks":[]});
-            res.send(await storage.getItem(listName));
-        }
+    var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
+    var values = [[listName,0,'[]','00:00']];
+  con.query(sql,[values], function (err, result) {
+    if (err) {
+        res.send("Playlist already exists!");
+    } else {
+        res.send("Playlist created");
     }
-
+  });
+}
     // Sent Object Structure:
     // {"tracks":[]}
 });
@@ -293,18 +257,34 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     // Retrieve and verify input parameter and body
     let listName = req.params.listName;
+    const {tracks} = req.body;
     const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
     const result = Joi.validate({list: listName, body: req.body}, schema);
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        // Check if list exists, and if it does replace the tracklist
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            await storage.setItem(listName, req.body);
-            res.send(await storage.getItem(listName));
-        }
+    var sql = "UPDATE playlists SET trackCount = ? WHERE listName = ?"
+    var sql2 = "UPDATE playlists SET tracks = '[?]' WHERE listName = ?"
+    var sql3 = "UPDATE playlists " + 
+                    "SET totalPlayTime = ("+
+                    "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+ 
+                    "FROM tracks WHERE track_id IN (?)"+
+                    ")" + 
+                    "WHERE playlists.listName = ?"
+    var sql4 = "DELETE FROM listcontents WHERE listName = ?"
+    var sql5 = "INSERT INTO listcontents "+
+                    "SELECT * FROM(select listName from playlists where listName = ?) n"+ 
+                    "cross join (SELECT * FROM music.tracks WHERE track_id IN (?)) det"
+    var count = tracks.length;
+    var name = listName;
+  con.query(sql+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
+    if (err) {
+        res.send(err)
+    } else {
+       res.send(req.body);
     }
+});
+}    
 
     // Sent Object Structure:
     // {
@@ -327,44 +307,18 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     const schema = Joi.string().required();
     const result = Joi.validate(listName, schema);
 
-    let trackIDs = [];
-    let returnList = [];
-
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        // Check if list exists, and if it does return the tracks
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            trackIDs = await storage.getItem(listName);
-            // Loop through all tracks and return any matching tracks
-            fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-              .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-              .on('data', (row) => {
-                if (trackIDs.tracks.includes(parseInt(row['track_id']))) {
-                  returnList.push({
-                    trackID: row['track_id'],
-                    albumId: row['album_id'],
-                    albumTitle: row['album_title'],
-                    artistName: row['artist_name'],
-                    tags: row['tags'],
-                    trackDateCreated: row['track_date_created'],
-                    trackDateRecorded: row['track_date_recorded'],
-                    trackDuration: row['track_duration'],
-                    trackGenres: row['track_genres'],
-                    trackNumber: row['track_number'],
-                    trackTitle: row['track_title'],
-                    trackImage: row['track_image_file']
-                  });
-                }
-              })
-              .on('error', (error) => {
-                res.status(500).send(error.message);
-              })
-              .on('end', () => {
-                res.send(returnList);
-              });
-        }
+    var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
+     "track_duration, track_genres, track_image_file, track_number, track_title from listcontents where listName = ?";
+  con.query(sql,[listName], function (err, result) {
+    if (err) {
+        res.send("Playlist doesn't exist!");
+    } else {
+        res.send(result);
     }
+  });
+}
 
     // Sent Object Structure:
     // [
@@ -401,15 +355,16 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-        // Check that list exisits, and if it does delete it
-        if (!(await storage.getItem(listName))) res.status(404).send('List doesn\'t exists');
-        else {
-            const deletedVal = await storage.getItem(listName);
-            await storage.removeItem(listName);
-            res.send(deletedVal);
+    var sql = "DELETE FROM listcontents WHERE listName = ?"
+    var sql2 = "DELETE FROM playlists WHERE listName = ?"
+    con.query(sql+";"+sql2,[listName,listName], function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send("Playlist deleted");
         }
+      });
     }
-
     // Sent Object Structure:
     // {
     //    "tracks" : [
@@ -427,37 +382,14 @@ app.get('/api/v1/music/lists', async (req, res) => {
     // N/A
 
     // Get saved list info
-    let entries = {
-        keys: await storage.keys(),
-        values: await storage.values()
+    var sql = "SELECT * FROM playlists";
+  con.query(sql, function (err, result) {
+    if (err) {
+        res.send("Playlist doesn't exist!");
+    } else {
+        res.send(result);
     }
-    let returnList = [];
-
-
-    // Populate return list with default play time value
-    for (let i = 0; i < entries.keys.length; i++) {
-        returnList.push({
-            listName: entries.keys[i],
-            trackCount: entries.values[i].tracks.length || 0,
-            trackList: entries.values[i].tracks,
-            totalPlayTime: 0
-        });
-    }
-    // Loop through all tracks to get track duration
-    fs.createReadStream('storage/lab3-data/raw_tracks.csv')
-            .pipe(parse({ delimiter: ',', columns: true, ltrim: true }))
-            .on('data', (row) => {
-                // Check if any list has this specfic track, and update the duration accordingly
-                returnList.forEach(list => {
-                    if (list.trackList.includes(parseInt(row['track_id']))) {
-                        list.totalPlayTime += parseInt(row['track_duration'].split(':')[0] * 60) + parseInt(row['track_duration'].split(':')[1]);
-                    }
-                })
-            })
-            .on('end', () => {
-                // Send the returnList
-                res.send(returnList);
-            });
+  });
 
     // Sent Object Structure:
     // [

@@ -432,7 +432,7 @@ app.post('/api/v1/login/credentials', (req, res) => {
         else {
           const token = jwt.sign({
             exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
-            username: result[0]?.username,
+            username: result[0].username,
             access_level: result[0].access_level
           }, process.env.JWT_KEY || 'se3316');
           res.send({jwt: token});
@@ -501,6 +501,10 @@ app.put('/api/v1/login/credentials', async (req, res) => {
 });
 
 app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
   let token = req.params.jwt;
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
@@ -511,9 +515,17 @@ app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
       else res.status(200).send('Your credentials have been verified, you can close this page.');
     });
   });
+
+  // Sent Object Structure:
+  // string
+
 });
 
 app.get('/api/v1/login/credentials/all', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
   let token = req.header('Authorization');
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
@@ -527,15 +539,25 @@ app.get('/api/v1/login/credentials/all', async (req, res) => {
       }
     });
   });
+
+  // Sent Object Structure:
+  // [
+  //  ...
+  //  {
+  //    username: string,
+  //    email: string,
+  //    status: string,
+  //    access_level: int
+  //  }
+  //  ...
+  // ]
+
 });
 
 app.post('/api/v1/login/credentials/update', async (req, res) => {
   let token = req.header('Authorization');
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
-
-    console.log(decoded);
-
     if (decoded.access_level !== 3) res.status(401);
     else {
       const schema = { newValue: Joi.string().required(), att: Joi.string().required() };
@@ -551,6 +573,180 @@ app.post('/api/v1/login/credentials/update', async (req, res) => {
       }
     }
   });
+});
+
+// Returns list of reviews
+app.get('/api/v1/music/reviews/:type/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  var sql = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    else {
+      res.status(200).send(result);
+    }
+  });
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+});
+
+// Add new review to list
+app.post('/api/v1/music/reviews/:type/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //  review_type: string,
+  //  parent: string,
+  //  author: string,
+  //  submitted_date_time: string,
+  //  body: string,
+  //  rating: number,
+  //  visibility: string
+  // }
+
+  const schema = {
+    review_type: Joi.string().required().max(10),
+    parent: Joi.string().required().max(300),
+    author: Joi.string().required().max(300),
+    submitted_date_time: Joi.string().required().max(75),
+    body: Joi.string().required(),
+    rating: Joi.number().required(),
+    visibility: Joi.string().required().max(20)
+  };
+  const result = Joi.validate({
+    review_type: req.body.newReview.review_type,
+    parent: req.body.newReview.parent,
+    author: req.body.newReview.author,
+    submitted_date_time: req.body.newReview.submitted_date_time,
+    body: req.body.newReview.body,
+    rating: req.body.newReview.rating,
+    visibility: req.body.newReview.visibility
+  }, schema);
+
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var sql1 = `INSERT INTO music.reviews  (review_type, parent, author, submitted_date_time, body, rating, visibility)
+              VALUES ('${req.body.newReview.review_type}', '${req.body.newReview.parent}', '${req.body.newReview.author}', '${req.body.newReview.submitted_date_time}', '${req.body.newReview.body}', '${req.body.newReview.rating}', '${req.body.newReview.visibility}');`;
+    con.query(sql1, function (err1, result1) {
+      if (err1) res.status(500).send(err1);
+      else {
+        var sql2 = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+        con.query(sql2, function (err2, result2) {
+          if (err2) res.status(500).send(err2);
+          else {
+            res.status(200).send(result2);
+          }
+        });
+      }
+    });
+  }
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+
+});
+
+// Hide review on list
+app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //  review_type: string,
+  //  parent: string,
+  //  author: string,
+  //  submitted_date_time: string,
+  //  body: string,
+  //  rating: number,
+  //  visibility: string
+  // }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level !== 3) res.status(401);
+    else {
+      const schema = {
+        review_type: Joi.string().required().max(10),
+        parent: Joi.string().required().max(300),
+        author: Joi.string().required().max(300),
+        submitted_date_time: Joi.string().required().max(75),
+        body: Joi.string().required(),
+        rating: Joi.number().required(),
+        visibility: Joi.string().required().max(20)
+      };
+      const result = Joi.validate({
+        review_type: req.body.newReview.review_type,
+        parent: req.body.newReview.parent,
+        author: req.body.newReview.author,
+        submitted_date_time: req.body.newReview.submitted_date_time,
+        body: req.body.newReview.body,
+        rating: req.body.newReview.rating,
+        visibility: req.body.newReview.visibility
+      }, schema);
+
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql1 = `UPDATE music.reviews SET visibility = 'Hidden'
+                    WHERE (review_type = '${req.params.type}') and (parent = '${req.body.newReview.parent}') and (author = '${req.body.newReview.author}')
+                    and (rating = '${req.body.newReview.rating}') and (submitted_date_time = '${req.body.newReview.submitted_date_time}');`;
+        con.query(sql1, function (err1, result1) {
+          if (err1) res.status(500).send(err1);
+          else {
+            var sql2 = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+            con.query(sql2, function (err2, result2) {
+              if (err2) res.status(500).send(err2);
+              else {
+                res.status(200).send(result2);
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+
 });
 
 // Listen to the specified port

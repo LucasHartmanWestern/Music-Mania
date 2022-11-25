@@ -1,22 +1,20 @@
 <div class="modalBody">
-  <ng-container *ngIf="list">
-    <h1>{{data.listName}} Reviews</h1>
-  </ng-container>
-
-  <ng-container *ngIf="!list">
-    <h1>This is not a list</h1>
-  </ng-container>
+  <h1>{{name}} Reviews</h1>
 
   <div class="stars d-flex justify-content-center mb-3">
     <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= rating() ? '★' : '☆'}}</span>
   </div>
 
-  <div class="reviewBody">
-    <div *ngFor="let review of data.reviews; index as i" class="review" [ngClass]="{'border-bottom': (i !== (data.reviews.length - 1))}">
-      <span class="body">{{review.reviewBody}}</span>
+  <div class="reviewBody" *ngIf="filteredReviews().length">
+    <div *ngFor="let review of filteredReviews(); index as i" class="review" [ngClass]="{'border-bottom': (i !== (filteredReviews().length - 1))}">
+      <span class="body">{{review.body}}</span>
       <div class="reviewDetails">
-        <span>{{review.reviewAuthor}}</span>
-        <span>{{review.reviewDateTime}}</span>
+        <div class="d-flex">
+          <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= (review?.rating || 0) ? '★' : '☆'}}</span>
+        </div>
+        <span>{{review.author}}</span>
+        <span>{{review.submitted_date_time}}</span>
+        <span class="hideReview" *ngIf="accessLvl === 3" (click)="hideReview(review)">Hide</span>
       </div>
     </div>
   </div>

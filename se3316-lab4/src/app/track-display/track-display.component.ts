@@ -4,7 +4,7 @@ import {Artist, Genre, Playlist, Track} from "../core/constants/common.enum";
 import { PlaylistSelectorComponent } from "../modals/playlist-selector/playlist-selector.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
-import {ReviewsComponent} from "../modals/reviews/reviews.component";
+import { ReviewsComponent } from "../modals/reviews/reviews.component";
 
 @Component({
   selector: 'app-track-display',
@@ -78,15 +78,9 @@ export class TrackDisplayComponent implements OnInit {
     }, error => console.log(error));
   }
 
-  openReview(whatToReview: any, list: boolean) {
-    whatToReview['reviews'] = [
-      {reviewAuthor: "username1", reviewBody: "This is a test review body test test test", reviewDateTime: "2022-01-01 13:30", reviewRating: 3},
-      {reviewAuthor: "username2", reviewBody: "This is a test 2 review body test test test", reviewDateTime: "2022-01-02 14:30", reviewRating: 1}
-    ];
-    console.log(whatToReview);
-
+  openReview(name: string, list: boolean) {
     const modalRef = this.modalService.open(ReviewsComponent, {centered: true, windowClass: 'ReviewsModalClass'});
-    modalRef.componentInstance.data = whatToReview;
+    modalRef.componentInstance.name = name;
     modalRef.componentInstance.list = list;
   }
 

@@ -29,9 +29,21 @@
         color: black;
         justify-content: space-between;
         margin: 8px 0;
+        position: relative;
 
         span {
           display: block;
+        }
+
+        .hideReview {
+          cursor: pointer;
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          font-size: 16px;
+          border: 1px solid #ecf0f1;
+          border-radius: 12px;
+          padding: 2px 16px;
         }
       }
     }

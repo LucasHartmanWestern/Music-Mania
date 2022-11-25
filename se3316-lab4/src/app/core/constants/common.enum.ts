@@ -47,3 +47,13 @@ export interface Credentials {
   email?: string | null,
   status?: string | null
 }
+
+export interface Reviews {
+  review_type?: string | null,
+  parent?: string | null,
+  author?: string | null,
+  submitted_date_time?: string | null,
+  body?: string | null,
+  rating?: number | null,
+  visibility?: string | null
+}

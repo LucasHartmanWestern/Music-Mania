@@ -4,8 +4,7 @@ import { NgxSpinnerService } from "ngx-spinner";
 import { Credentials, Playlist } from "../../core/constants/common.enum";
 import { JwtHelperService } from "@auth0/angular-jwt";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
-import {ReviewsComponent} from "../../modals/reviews/reviews.component";
-import {UsersComponent} from "../../modals/users/users.component";
+import { UsersComponent } from "../../modals/users/users.component";
 
 @Component({
   selector: 'app-playlist',

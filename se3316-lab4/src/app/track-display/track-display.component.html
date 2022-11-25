@@ -19,7 +19,7 @@
 
     <ng-container *ngIf="selectedList">
       <div class="header">
-        <button class="review" (click)="openReview(selectedList, true)">Write a review</button>
+        <button class="review" (click)="openReview(selectedList.listName, true)">Write a review</button>
         <span [ngbPopover]="editName" placement="left" [autoClose]="'outside'" #renamePopover="ngbPopover">{{selectedList.listName}}</span>
         <button (click)="deleteList(selectedList)">X</button>
 
@@ -42,6 +42,7 @@
         <th (click)="sortTable(4)">Duration</th>
         <th></th>
         <th></th>
+        <th></th>
       </tr>
 
       <tr *ngFor="let row of tracks" (click)="preview('track', row)">
@@ -50,6 +51,7 @@
         <td>{{row.track_title}}</td>
         <td>{{row.album_title}}</td>
         <td>{{row.track_duration}}</td>
+        <td (click)="openReview(row.track_title, false)">Reviews</td>
         <td><a href="https://www.youtube.com/results?search_query={{row.track_title}}" target="_blank">Listen</a></td>
         <td *ngIf="!selectedList" (click)="addToList(row)">+</td>
         <td *ngIf="selectedList" (click)="removeFromList(row)">-</td>

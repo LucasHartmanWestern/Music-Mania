@@ -1,0 +1,11 @@
+<div class="main">
+  <div class="login-card">
+    <span class="title">Verify Account</span>
+    <form (submit)="validateAccount($event)">
+      <div class="error" *ngIf="error">
+        <span>{{error}}</span>
+      </div>
+      <input type="submit" [value]="'Verify'">
+    </form>
+  </div>
+</div>

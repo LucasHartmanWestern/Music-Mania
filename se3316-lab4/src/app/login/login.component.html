@@ -16,6 +16,13 @@
       </div>
       <div class="error" *ngIf="error">
         <span>{{error}}</span>
+        <button (click)="loginIssue = true" *ngIf="forgotPw && !loginIssue">Forgot password? Click Here</button>
+        <button (click)="loginIssue = true" *ngIf="resendValid && !loginIssue">Resend validation email</button>
+        <form *ngIf="loginIssue" (submit)="resendEmail($event, email.value)">
+          <label>Input email address here</label>
+          <input type="text" placeholder="Email Address" #email>
+          <input type="submit" value="Send">
+        </form>
       </div>
       <input type="submit" [value]="formType === 'Login' ? 'Login' : 'Create Account'">
     </form>

@@ -8,7 +8,4 @@ import { Credentials } from "./core/constants/common.enum";
 })
 export class AppComponent {
   title = 'se3316-lab4';
-  credentials: Credentials = {
-    jwt: localStorage.getItem('token')
-  };
 }

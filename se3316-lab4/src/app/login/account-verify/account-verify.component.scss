@@ -1,0 +1,45 @@
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+
+  .login-card {
+    background-color: white;
+    height: 200px;
+    width: 400px;
+    border-radius: 12px;
+    padding: 36px 24px;
+
+    .title {
+      font-size: 32px;
+    }
+
+    form {
+      position: relative;
+
+      .error {
+        border-radius: 12px;
+        background-color: #f2dede;
+        border: 1px solid #b94a48;
+        color: #b94a48;
+        padding: 8px;
+        margin-top: 8px;
+      }
+
+      input[type=submit] {
+        font-size: 20px;
+        width: 250px;
+        padding: 4px;
+        border: 1px solid #8b8b8b;
+        background-color: white;
+        color: #8b8b8b;
+        border-radius: 12px;
+        outline: none;
+        position: relative;
+        margin-top: 16px;
+      }
+    }
+  }
+}

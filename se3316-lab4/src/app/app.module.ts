@@ -17,6 +17,9 @@ import { NgClass } from "@angular/common";
 import { LoginComponent } from './login/login.component';
 import { ReviewsComponent } from './modals/reviews/reviews.component';
 import { UsersComponent } from './modals/users/users.component';
+import { PasswordResetComponent } from './login/password-reset/password-reset.component';
+import { MainComponent } from './main/main.component';
+import { AccountVerifyComponent } from './login/account-verify/account-verify.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +32,10 @@ import { UsersComponent } from './modals/users/users.component';
     PreviewComponent,
     LoginComponent,
     ReviewsComponent,
-    UsersComponent
+    UsersComponent,
+    PasswordResetComponent,
+    MainComponent,
+    AccountVerifyComponent
   ],
   imports: [
     BrowserModule,

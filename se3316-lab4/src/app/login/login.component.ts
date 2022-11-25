@@ -13,6 +13,9 @@ export class LoginComponent implements OnInit {
   @Output() credentials = new EventEmitter<Credentials>();
   error: string = '';
   formType: string = 'Login';
+  forgotPw: boolean = false;
+  resendValid: boolean = false;
+  loginIssue: boolean = false;
 
   constructor(private authenticationService: AuthenticationService, private spinner: NgxSpinnerService) { }
 
@@ -35,13 +38,14 @@ export class LoginComponent implements OnInit {
         this.spinner.hide();
       }, error => {
         this.spinner.hide();
+        if (error === "Invalid Credentials") this.forgotPw = true;
+        if (error === "Please verify your account to continue") this.resendValid = true;
         this.error = error;
       });
     }
   }
 
   createAccount(username: string, email: string, password: string, confirm: string): void {
-
     if (password !== confirm) this.error = "Your password does not match your confirmation";
     else if (!username || !password) this.error = "Please enter both a username and password";
     else {
@@ -56,6 +60,34 @@ export class LoginComponent implements OnInit {
           this.error = "Something went wrong, please try again";
         }
 
+        this.spinner.hide();
+      }, error => {
+        this.spinner.hide();
+        this.error = error;
+      });
+    }
+  }
+
+  resendEmail(event: any, email: string): void {
+    event.preventDefault();
+    this.loginIssue = false;
+
+    if (this.resendValid) {
+      this.resendValid = false;
+      this.error = 'Email to validate account resent';
+      this.spinner.show();
+      this.authenticationService.resendValidation(email).subscribe(res => {
+        this.spinner.hide();
+      }, error => {
+        this.spinner.hide();
+        this.error = error;
+      });
+    }
+    if (this.forgotPw) {
+      this.forgotPw = false;
+      this.error = 'Email to reset password sent';
+      this.spinner.show();
+      this.authenticationService.resetPassword(email).subscribe(res => {
         this.spinner.hide();
       }, error => {
         this.spinner.hide();

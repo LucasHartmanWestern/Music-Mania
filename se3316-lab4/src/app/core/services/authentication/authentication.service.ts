@@ -18,10 +18,13 @@ export class AuthenticationService {
   constructor(private http: HttpClient, private spinner: NgxSpinnerService) {
   }
 
-  login(username: string, password: string): Observable<Credentials> {
+  login(username: string, password: string, reset?: boolean, newPassword?: string, verify?: boolean): Observable<Credentials> {
     return this.http.post<Credentials>(`${Constants.apiPaths.credentials}`, {
       "username": username,
-      "password": password
+      "password": password,
+      "reset": reset || null,
+      "newPassword": newPassword || null,
+      "verify": verify || null
     }, {headers: this.httpHeaders}).pipe(
       map((data: Credentials) => data),
       catchError(this.handleError)
@@ -49,6 +52,24 @@ export class AuthenticationService {
   updateUser(user: Credentials, newValue: string, att: string): Observable<any> {
     return this.http.post<any>(`${Constants.apiPaths.credentials}/update`,{user: user, newValue: newValue, att: att},{headers: this.httpHeaders}).pipe(
       map((data: any) => data),
+      catchError(this.handleError)
+    );
+  }
+
+  resetPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${Constants.apiPaths.credentials}/reset`, {
+      "email": email
+    }, {headers: this.httpHeaders}).pipe(
+      map((data: Credentials) => data),
+      catchError(this.handleError)
+    );
+  }
+
+  resendValidation(email: string): Observable<any> {
+    return this.http.post<any>(`${Constants.apiPaths.credentials}/resend`, {
+      "email": email
+    }, {headers: this.httpHeaders}).pipe(
+      map((data: Credentials) => data),
       catchError(this.handleError)
     );
   }

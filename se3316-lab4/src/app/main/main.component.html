@@ -1,0 +1,27 @@
+<ng-container *ngIf="credentials.jwt">
+  <div class="track-page">
+
+    <div class="sidebar">
+
+      <app-sidebar (logout)="credentials = $event"></app-sidebar>
+
+    </div>
+
+    <div class="main">
+
+      <app-track-search></app-track-search>
+
+      <app-track-display></app-track-display>
+
+    </div>
+
+    <div class="references">
+      <span>Music data from: <a href="https://arxiv.org/abs/1612.01840">https://arxiv.org/abs/1612.01840</a></span>
+    </div>
+
+  </div>
+</ng-container>
+
+<ng-container *ngIf="!credentials.jwt">
+  <app-login (credentials)="credentials = $event"></app-login>
+</ng-container>

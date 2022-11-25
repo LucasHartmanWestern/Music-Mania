@@ -415,7 +415,10 @@ app.post('/api/v1/login/credentials', (req, res) => {
   // Received Object Structure:
   // {
   //    username: string,
-  //    password: string
+  //    password: string,
+  //    reset?: boolean,
+  //    newPassword?: string,
+  //    verify?: boolean
   // }
 
   const schema = { username: Joi.string().required(), password: Joi.string().required() };
@@ -428,13 +431,29 @@ app.post('/api/v1/login/credentials', (req, res) => {
       if (err) throw err;
       if (result.length) {
         if (result[0]?.status === 'Deactivated') res.status(400).send("Your account is no longer active, please contact the site administrator");
-        else if (result[0]?.status === 'Temp') res.status(400).send("Please verify your account to continue");
+        else if (result[0]?.status === 'Temp' && !req.body.verify) res.status(400).send("Please verify your account to continue");
         else {
+
+          if (req.body.reset) {
+            var sql = `UPDATE music.credentials SET password = '${req.body.newPassword}' WHERE (username = '${req.body.username}') and (password = '${req.body.password}');`;
+            con.query(sql, function (err, result) {
+              if (err) res.status(500).send(err);
+            });
+          }
+
+          if (req.body.verify) {
+            var sql = `UPDATE music.credentials SET status = 'Active' WHERE (username = '${req.body.username}') AND (password = '${req.body.password}');`;
+            con.query(sql, function (err, result) {
+              if (err) res.status(500).send(err);
+            });
+          }
+
           const token = jwt.sign({
             exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
             username: result[0].username,
             access_level: result[0].access_level
           }, process.env.JWT_KEY || 'se3316');
+
           res.send({jwt: token});
         }
       }
@@ -484,7 +503,7 @@ app.put('/api/v1/login/credentials', async (req, res) => {
             subject: 'Verify Email Address for Music App',
             text: `
             Verify your email address using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:3000/api/v1/login/credentials/verify/${token}
+            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
             `
           };
 
@@ -500,25 +519,97 @@ app.put('/api/v1/login/credentials', async (req, res) => {
   // access_level: int
 });
 
-app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
+// Resend email verification
+app.post('/api/v1/login/credentials/resend', async (req, res) => {
 
   // Received Object Structure:
-  // N/A
+  // {
+  //    email: string
+  // }
 
-  let token = req.params.jwt;
-  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
-    if (err) res.status(500);
+  const schema = { Email: Joi.string().email().required() };
+  const result = Joi.validate({ Email: req.body.email }, schema);
 
-    var sql = `UPDATE music.credentials SET status = 'Active' WHERE (username = '${decoded.username}') AND (password = '${decoded.password}');`;
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      else res.status(200).send('Your credentials have been verified, you can close this page.');
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var existsCheck = `SELECT * FROM music.credentials WHERE email = '${req.body.email}' AND status = 'Temp'`;
+    con.query(existsCheck, function (err, result) {
+      if (err) res.status(500).send(err);
+      if (!result.length) {
+        res.status(400).send('Email does not exist');
+      } else {
+        const token = jwt.sign({
+          exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
+          username: result[0].username,
+          password: result[0].password
+        }, process.env.JWT_KEY || 'se3316');
+
+        var mailOptions = {
+          from: 'canedhamburgers@gmail.com',
+          to: req.body.email,
+          subject: 'Verify Email Address for Music App',
+          text: `
+            Verify your email address using this link:
+            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
+            `
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {});
+
+        res.send({result: 'Success'});
+      }
     });
-  });
+  }
 
   // Sent Object Structure:
-  // string
+  // { result: string }
+});
 
+// Reset email password
+app.post('/api/v1/login/credentials/reset', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //    email: string
+  // }
+
+  const schema = { Email: Joi.string().email().required() };
+  const result = Joi.validate({ Email: req.body.email }, schema);
+
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var existsCheck = `SELECT * FROM music.credentials WHERE email = '${req.body.email}'`;
+    con.query(existsCheck, function (err, result) {
+      if (err) res.status(500).send(err);
+      if (!result.length) {
+        res.status(400).send('Email does not exist');
+      } else {
+        const token = jwt.sign({
+          exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
+          username: result[0].username,
+          password: result[0].password,
+          reset: true
+        }, process.env.JWT_KEY || 'se3316');
+
+        var mailOptions = {
+          from: 'canedhamburgers@gmail.com',
+          to: req.body.email,
+          subject: 'Reset Password for Music App',
+          text: `
+            Reset your password using this link:
+            ${process.env.BASE_URL || 'http://localhost'}:4200/login/reset/${token}
+            `
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {});
+
+        res.send({result: 'Success'});
+      }
+    });
+  }
+
+  // Sent Object Structure:
+  // { result: string }
 });
 
 app.get('/api/v1/login/credentials/all', async (req, res) => {

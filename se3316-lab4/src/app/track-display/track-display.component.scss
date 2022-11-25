@@ -30,7 +30,17 @@
       background-color: #ecf0f1;
     }
 
-    button:not(.review) {
+    .visibility {
+      position: absolute;
+      right: 0;
+      border: none;
+      font-size: 28px;
+      border-radius: 12px;
+      padding: 8px 24px;
+      background-color: #ecf0f1;
+    }
+
+    button:not(.review):not(.visibility) {
       outline: none;
       background-color: transparent;
       border: none;

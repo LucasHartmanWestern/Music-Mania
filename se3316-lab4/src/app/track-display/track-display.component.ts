@@ -108,6 +108,7 @@ export class TrackDisplayComponent implements OnInit {
         // @ts-ignore
         playlist.totalPlayTime = this.updateTime(playlist.totalPlayTime, track.track_duration, true);
         playlist.trackCount += 1;
+        playlist.lastModified = this.getDate(new Date());
 
         this.musicService.updatedList$.next({list: playlist, delete: false});
       });

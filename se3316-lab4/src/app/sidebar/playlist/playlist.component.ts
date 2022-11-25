@@ -35,13 +35,14 @@ export class PlaylistComponent implements OnInit {
     this.musicService.updatedList$.subscribe((val: {list: Playlist, delete: boolean}) => {
       if (!val.delete) this.lists[this.lists.findIndex((list: Playlist) => list === val.list)] = val.list;
       else if (val.delete) this.lists.splice(this.lists.findIndex((list: Playlist) => list === val.list), 1);
+
+      console.log(this.displayLists());
     });
 
     this.access_level = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
-    console.log(this.access_level);
   }
 
-  // Get and display the genres
+  // Get and display the lists
   getLists(): void {
     this.spinner.show();
     this.musicService.getLists().subscribe(res => {
@@ -49,6 +50,12 @@ export class PlaylistComponent implements OnInit {
       this.musicService.lists$.next({lists: this.lists});
       this.spinner.hide();
     }, error => console.log(error));
+  }
+
+  displayLists(): Playlist[] {
+    return this.lists?.sort((a: Playlist, b: Playlist) => {
+      return a.lastModified > b.lastModified ? -1 : a.lastModified < b.lastModified ? 1 : 0;
+    });
   }
 
   readList(list: Playlist): void {
@@ -76,6 +83,7 @@ export class PlaylistComponent implements OnInit {
   showUsers(): void {
     const modalRef = this.modalService.open(UsersComponent, {centered: true, windowClass: 'UsersModalClass'});
   }
+
 
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});

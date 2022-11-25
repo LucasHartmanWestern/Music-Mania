@@ -105,6 +105,22 @@ export class MusicService {
     );
   }
 
+  playlistVisibility(listName: string, visibility: string): Observable<Reviews[]> {
+    return this.http.put(`${Constants.apiPaths.playlists}/visibility/${listName}/${visibility}`, {}, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  renameList(oldName: string, newName: string): Observable<Reviews[]> {
+    return this.http.put(`${Constants.apiPaths.playlists}/rename/renameList/rename`, { oldName: oldName, newName: newName }, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(err: HttpErrorResponse) {
     let errorMessage = '';
     if (err.error instanceof ErrorEvent) {

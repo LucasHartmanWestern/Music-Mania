@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MusicService } from "../core/services/music/music.service";
-import {Artist, Genre, Playlist, Track} from "../core/constants/common.enum";
+import { Artist, Genre, Playlist, Track } from "../core/constants/common.enum";
 import { PlaylistSelectorComponent } from "../modals/playlist-selector/playlist-selector.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ReviewsComponent } from "../modals/reviews/reviews.component";
+import { JwtHelperService } from "@auth0/angular-jwt";
 
 @Component({
   selector: 'app-track-display',
@@ -18,6 +19,8 @@ export class TrackDisplayComponent implements OnInit {
   artists: Artist[] = [];
   lists: Playlist[] = [];
   selectedList: Playlist | any = null;
+  helper = new JwtHelperService();
+  username = this.helper.decodeToken(localStorage.getItem('token') || undefined).username;
 
   sortTracking = {index: -1, sort: 'ASC'};
 
@@ -82,6 +85,10 @@ export class TrackDisplayComponent implements OnInit {
     const modalRef = this.modalService.open(ReviewsComponent, {centered: true, windowClass: 'ReviewsModalClass'});
     modalRef.componentInstance.name = name;
     modalRef.componentInstance.list = list;
+    modalRef.componentInstance.listUpdated.subscribe((res: boolean) => {
+      this.selectedList.lastModified = this.getDate(new Date());
+      this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+    });
   }
 
   // Open list selector modal and add to playlist
@@ -139,7 +146,7 @@ export class TrackDisplayComponent implements OnInit {
   deleteList(list: Playlist): void {
     this.musicService.deleteList(list.listName).subscribe(res => {
       console.log(res);
-    })
+    });
     this.tracks = [];
     this.musicService.updatedList$.next({list: this.selectedList, delete: true});
     this.selectedList = null;
@@ -148,12 +155,39 @@ export class TrackDisplayComponent implements OnInit {
   renameList(event: any, newName: string): void {
     if (newName) {
       event.preventDefault();
-      this.selectedList.listName = newName;
+      this.musicService.renameList(this.selectedList.listName, newName).subscribe(res => {
+        this.selectedList.listName = newName;
+        let currentDate = new Date();
+        this.selectedList.lastModified = this.getDate(new Date());
+        this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+      });
     }
+  }
+
+  updateVisibility(list: Playlist, visibility: string): void {
+    list.visibility = visibility;
+    this.musicService.playlistVisibility(list.listName, visibility).subscribe(res => {
+      let currentDate = new Date();
+      this.selectedList.lastModified = this.getDate(new Date());
+      this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+    });
   }
 
   preview(type: string, preview: any): void {
     this.musicService.previewSelection$.next({preview: preview, type: type});
+  }
+
+  getDate(date: any): string {
+    return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getMinutes().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getSeconds().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })].join(':')}`
   }
 
   // Sort the table based on the header selected

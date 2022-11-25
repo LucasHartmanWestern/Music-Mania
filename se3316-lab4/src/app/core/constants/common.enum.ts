@@ -34,7 +34,10 @@ export interface Playlist {
   listName: string,
   trackCount: number,
   tracks: any[],
-  totalPlayTime: number
+  totalPlayTime: number,
+  lastModified: string,
+  visibility: string,
+  owner: string
 }
 
 export interface Credentials {

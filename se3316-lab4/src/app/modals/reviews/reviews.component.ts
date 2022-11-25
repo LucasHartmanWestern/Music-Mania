@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { JwtHelperService } from "@auth0/angular-jwt";
 import { MusicService } from "../../core/services/music/music.service";
@@ -14,6 +14,7 @@ export class ReviewsComponent implements OnInit {
 
   @Input() name: string = '';
   @Input() list: boolean = false;
+  @Output() listUpdated = new EventEmitter<boolean>();
 
   reviewList: Reviews[] = [];
 
@@ -57,18 +58,33 @@ export class ReviewsComponent implements OnInit {
     let reqBody: Reviews = {
       body: review,
       author: this.username,
-      submitted_date_time: `${[currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()].join('-')} ${[currentDate.getHours(), currentDate.getMinutes()].join(':')}`,
+      submitted_date_time: this.getDate(new Date()),
       rating: parseInt(rating),
       visibility: "Visible",
       parent: this.name,
       review_type: this.list ? 'List' : 'Track'
     }
 
+    if (this.list) this.listUpdated.emit(true);
+
     this.spinner.show();
     this.musicService.addReview(this.name, this.list ? 'List' : 'Track', reqBody).subscribe(res => {
       this.reviewList = res;
       this.spinner.hide();
     })
+  }
+
+  getDate(date: any): string {
+    return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getMinutes().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getSeconds().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })].join(':')}`
   }
 
   hideReview(review: Reviews): void {

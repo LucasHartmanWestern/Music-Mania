@@ -1,13 +1,11 @@
 <!-- Modal for selecting a list to add track to -->
 <div class="listAdder">
-  <span class="trackTitle">Adding: {{trackToInsert.trackTitle}}</span>
+  <span class="trackTitle">Adding: {{trackToInsert.track_title}}</span>
 
   <span class="header">Select a list to add the track to</span>
   <div class="listHolder">
-    <span *ngFor="let list of lists" (click)="selectList(list)">{{list.listName}}</span>
+    <span *ngFor="let list of getLists()" (click)="selectList(list)">{{list.listName}}</span>
   </div>
-
-
 
   <button class="close" (click)="close()">Cancel</button>
 </div>

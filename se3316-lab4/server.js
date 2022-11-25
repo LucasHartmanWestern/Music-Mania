@@ -66,8 +66,8 @@ app.get('/api/v1/music/genres', (req, res) => {
 
     var sql = "SELECT * FROM music.genres";
     con.query(sql, function (err, result) {
-        if (err) throw err;
-        res.send(result);
+      if (err) throw err;
+      res.send(result);
     });
 
     // Sent Object Structure:
@@ -129,8 +129,8 @@ app.get('/api/v1/music/tracks', (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
-    con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
+      var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) OR LOCATE(?, album_title) OR LOCATE(?, track_genres) OR LOCATE(?, artist_name) LIMIT ?;";
+      con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
         if (err) throw err;
         res.send(result);
       });
@@ -165,18 +165,18 @@ app.get('/api/v1/music/artists', (req, res) => {
     // Retrieve and verify input parameters
     const name = req.query['name'];
     const limit = req.query['limit'];
-    
+
     const schema = { limit: Joi.number().required(), name: Joi.string().required() };
     const result = Joi.validate({ limit: limit, name: name }, schema);
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    const lim = parseInt(limit);
-    var sql = "SELECT * FROM artists WHERE LOCATE(?, artist_name) limit ?;";
-    con.query(sql,[name,lim], function (err, result) {
+      const lim = parseInt(limit);
+      var sql = "SELECT * FROM music.artists WHERE LOCATE(?, artist_name) LIMIT ?;";
+      con.query(sql,[name,lim], function (err, result) {
         if (err) {
-            res.send (err);
+          res.send (err);
         } else {
-            res.send(result);
+          res.send(result);
         }
       });
     }
@@ -227,16 +227,16 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     const result = Joi.validate(listName, schema);
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
-    var values = [[listName,0,'[]','00:00']];
-  con.query(sql,[values], function (err, result) {
-    if (err) {
-        res.send("Playlist already exists!");
-    } else {
-        res.send("Playlist created");
+      var sql = "INSERT INTO music.playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
+      var values = [[listName,0,'[]','00:00']];
+      con.query(sql,[values], function (err, result) {
+        if (err) {
+          res.status(400).send("Playlist already exists!");
+        } else {
+          res.send({"tracks": []});
+        }
+      });
     }
-  });
-}
     // Sent Object Structure:
     // {"tracks":[]}
 });
@@ -263,28 +263,27 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "UPDATE playlists SET trackCount = ? WHERE listName = ?"
-    var sql2 = "UPDATE playlists SET tracks = '[?]' WHERE listName = ?"
-    var sql3 = "UPDATE playlists " + 
-                    "SET totalPlayTime = ("+
-                    "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+ 
-                    "FROM tracks WHERE track_id IN (?)"+
-                    ")" + 
-                    "WHERE playlists.listName = ?"
-    var sql4 = "DELETE FROM listcontents WHERE listName = ?"
-    var sql5 = "INSERT INTO listcontents "+
-                    "SELECT * FROM(select listName from playlists where listName = ?) n"+ 
-                    "cross join (SELECT * FROM music.tracks WHERE track_id IN (?)) det"
-    var count = tracks.length;
-    var name = listName;
-  con.query(sql+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
-    if (err) {
-        res.send(err)
-    } else {
-       res.send(req.body);
+      var sql1 =  "UPDATE music.playlists SET trackCount = ? WHERE listName = ?";
+      var sql2 =  "UPDATE music.playlists SET tracks = '[?]' WHERE listName = ?";
+      var sql3 =  "UPDATE music.playlists " +
+                  "SET totalPlayTime = ("+
+                  "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+
+                  "FROM music.tracks WHERE track_id IN (?))"+
+                  "WHERE music.playlists.listName = ?";
+      var sql4 =  "DELETE FROM music.listcontents WHERE listName = ?"
+      var sql5 =  "INSERT INTO music.listcontents "+
+                  "SELECT * FROM(SELECT listName FROM music.playlists WHERE listName = ?) n "+
+                  "CROSS JOIN (SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, track_duration, track_genres, track_image_file, track_number, track_title FROM music.tracks WHERE track_id IN (?)) det"
+      var count = tracks.length;
+      var name = listName;
+      con.query(sql1+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
+        if (err) {
+          res.send(err)
+        } else {
+         res.send(req.body);
+        }
+      });
     }
-});
-}    
 
     // Sent Object Structure:
     // {
@@ -309,16 +308,16 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
-     "track_duration, track_genres, track_image_file, track_number, track_title from listcontents where listName = ?";
-  con.query(sql,[listName], function (err, result) {
-    if (err) {
-        res.send("Playlist doesn't exist!");
-    } else {
-        res.send(result);
+      var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
+                "track_duration, track_genres, track_image_file, track_number, track_title FROM music.listcontents WHERE listName = ?";
+      con.query(sql,[listName], function (err, result) {
+        if (err) {
+          res.status(400).send("Playlist doesn't exist!");
+        } else {
+          res.send(result);
+        }
+      });
     }
-  });
-}
 
     // Sent Object Structure:
     // [
@@ -355,16 +354,17 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "DELETE FROM listcontents WHERE listName = ?"
-    var sql2 = "DELETE FROM playlists WHERE listName = ?"
-    con.query(sql+";"+sql2,[listName,listName], function (err, result) {
+      var sql = "DELETE FROM music.listcontents WHERE listName = ?"
+      var sql2 = "DELETE FROM playlists WHERE listName = ?"
+      con.query(sql+";"+sql2,[listName,listName], function (err, result) {
         if (err) {
-            res.send(err);
+          res.send(err);
         } else {
-            res.send("Playlist deleted");
+          res.send({"tracks": []});
         }
       });
     }
+
     // Sent Object Structure:
     // {
     //    "tracks" : [
@@ -382,14 +382,15 @@ app.get('/api/v1/music/lists', async (req, res) => {
     // N/A
 
     // Get saved list info
-    var sql = "SELECT * FROM playlists";
-  con.query(sql, function (err, result) {
-    if (err) {
+    var sql = "SELECT * FROM music.playlists";
+    con.query(sql, function (err, result) {
+      if (err) {
         res.send("Playlist doesn't exist!");
-    } else {
+      } else {
+        result.map(list => list.tracks = JSON.parse(list.tracks))
         res.send(result);
-    }
-  });
+      }
+    });
 
     // Sent Object Structure:
     // [
@@ -532,6 +533,8 @@ app.post('/api/v1/login/credentials/update', async (req, res) => {
   let token = req.header('Authorization');
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
+
+    console.log(decoded);
 
     if (decoded.access_level !== 3) res.status(401);
     else {

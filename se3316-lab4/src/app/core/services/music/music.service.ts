@@ -18,6 +18,7 @@ export class MusicService {
   lists$: Subject <{ lists: Playlist[] | any }> = new Subject<{ lists: Playlist[] | any }>();
   updatedList$: Subject <{ list: Playlist | any, delete: boolean }> = new Subject<{ list: Playlist | any, delete: boolean }>();
   listTracks$: Subject <{ list: Playlist, tracks: Track[] | any }> = new Subject<{ list: Playlist, tracks: Track[] | any }>();
+  selectList$: Subject <{ list: any }> = new Subject<{ list: any }>();
 
   httpHeaders = new HttpHeaders({
     'Authorization': localStorage.getItem('token') || 'N/A'

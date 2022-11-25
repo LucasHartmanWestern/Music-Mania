@@ -64,20 +64,14 @@ export class PlaylistComponent implements OnInit {
   createList(listName: string): void {
     this.spinner.show();
     this.musicService.createList(listName).subscribe(res => {
-      this.lists.push({listName: listName, trackCount: 0, trackList: [], totalPlayTime: 0});
+      this.lists.push({listName: listName, trackCount: 0, tracks: [], totalPlayTime: '00:00:00'});
       this.musicService.lists$.next({lists: this.lists});
       this.spinner.hide();
     }, error => console.log(error));
   }
 
   getListInfo(list: Playlist): string {
-    return `${list.trackCount} tracks - ${Math.floor(list.totalPlayTime / 60).toLocaleString('en-US', {
-      minimumIntegerDigits: 2,
-      useGrouping: false
-    })}:${(list.totalPlayTime % 60).toLocaleString('en-US', {
-      minimumIntegerDigits: 2,
-      useGrouping: false
-    })} duration`;
+    return `${list.trackCount} tracks - ${list.totalPlayTime} duration`;
   }
 
   showUsers(): void {
@@ -87,6 +81,7 @@ export class PlaylistComponent implements OnInit {
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});
     this.musicService.searchParams$.next({trackTitle: '', artistTitle: '', albumTitle: ''});
+    this.musicService.selectList$.next({list: null});
   }
 
   logoutOfApp(): void {

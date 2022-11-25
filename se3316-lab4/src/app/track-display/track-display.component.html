@@ -45,12 +45,12 @@
       </tr>
 
       <tr *ngFor="let row of tracks" (click)="preview('track', row)">
-        <td>{{row.trackID}}</td>
-        <td><img [src]="row.trackImage" onerror="this.src='http://www.kurin.com/wp-content/uploads/placeholder-square.jpg'" class="trackImage"></td>
-        <td>{{row.trackTitle}}</td>
-        <td>{{row.albumTitle}}</td>
-        <td>{{row.trackDuration}}</td>
-        <td><a href="https://www.youtube.com/results?search_query={{row.trackTitle}}" target="_blank">Listen</a></td>
+        <td>{{row.track_id}}</td>
+        <td><img [src]="row.track_image_file" onerror="this.src='http://www.kurin.com/wp-content/uploads/placeholder-square.jpg'" class="trackImage"></td>
+        <td>{{row.track_title}}</td>
+        <td>{{row.album_title}}</td>
+        <td>{{row.track_duration}}</td>
+        <td><a href="https://www.youtube.com/results?search_query={{row.track_title}}" target="_blank">Listen</a></td>
         <td *ngIf="!selectedList" (click)="addToList(row)">+</td>
         <td *ngIf="selectedList" (click)="removeFromList(row)">-</td>
       </tr>

@@ -90,9 +90,12 @@ export class TrackDisplayComponent implements OnInit {
     modalRef.componentInstance.trackToInsert = track;
     modalRef.componentInstance.lists = this.lists;
 
-    console.log(track);
-
     modalRef.componentInstance.selectedPlaylist.subscribe((playlist: any) => {
+      if (playlist.tracks.includes(track.track_id)) {
+        alert("Playlist already contains track");
+        return;
+      }
+
       this.musicService.updateList(playlist, [parseInt(track?.track_id), ...playlist?.tracks?.map((track: string) => parseInt(track))]).subscribe((res: any) => {
         playlist.tracks = res.tracks;
         // @ts-ignore

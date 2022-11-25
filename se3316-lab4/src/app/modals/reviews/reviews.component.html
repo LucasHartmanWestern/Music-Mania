@@ -14,7 +14,22 @@
         </div>
         <span>{{review.author}}</span>
         <span>{{review.submitted_date_time}}</span>
-        <span class="hideReview" *ngIf="accessLvl === 3" (click)="hideReview(review)">Hide</span>
+        <span class="hideReview" *ngIf="accessLvl === 3" (click)="toggleReview(review, 'Hidden')">Hide</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="reviewBody" *ngIf="filteredReviews(true).length && accessLvl === 3">
+    <h4>Hidden Reviews</h4>
+    <div *ngFor="let review of filteredReviews(true); index as i" class="review" [ngClass]="{'border-bottom': (i !== (filteredReviews().length - 1))}">
+      <span class="body">{{review.body}}</span>
+      <div class="reviewDetails">
+        <div class="d-flex">
+          <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= (review?.rating || 0) ? '★' : '☆'}}</span>
+        </div>
+        <span>{{review.author}}</span>
+        <span>{{review.submitted_date_time}}</span>
+        <span class="hideReview" *ngIf="accessLvl === 3" (click)="toggleReview(review, 'Visible')">Show</span>
       </div>
     </div>
   </div>

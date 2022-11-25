@@ -36,8 +36,9 @@ export class ReviewsComponent implements OnInit {
     this.accessLvl = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
   }
 
-  filteredReviews(): Reviews[] {
-    return this.reviewList.filter(review => review.visibility === 'Visible');
+  filteredReviews(showHidden?: boolean): Reviews[] {
+    if (showHidden) return this.reviewList.filter(review => review.visibility === 'Hidden');
+    else return this.reviewList.filter(review => review.visibility === 'Visible');
   }
 
   rating(): number {
@@ -87,9 +88,9 @@ export class ReviewsComponent implements OnInit {
     })].join(':')}`
   }
 
-  hideReview(review: Reviews): void {
+  toggleReview(review: Reviews, visibility: string): void {
     this.spinner.show();
-    this.musicService.hideReview(this.name, this.list ? 'List' : 'Track', review).subscribe(res => {
+    this.musicService.toggleReview(this.name, this.list ? 'List' : 'Track', review, visibility).subscribe(res => {
       this.reviewList = res;
       this.spinner.hide();
     })

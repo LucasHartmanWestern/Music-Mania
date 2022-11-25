@@ -906,16 +906,19 @@ app.post('/api/v1/music/reviews/:type/:name', async (req, res) => {
 });
 
 // Hide review on list
-app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
+app.post('/api/v1/music/reviews/:type/toggle/:name', async (req, res) => {
 
   // Received Object Structure:
   // {
-  //  review_type: string,
-  //  parent: string,
-  //  author: string,
-  //  submitted_date_time: string,
-  //  body: string,
-  //  rating: number,
+  //  newReview: {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  }
   //  visibility: string
   // }
 
@@ -945,7 +948,7 @@ app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
 
       if (result.error) res.status(400).send(result.error.details[0].message);
       else {
-        var sql1 = `UPDATE music.reviews SET visibility = 'Hidden'
+        var sql1 = `UPDATE music.reviews SET visibility = '${req.body.visibility}'
                     WHERE (review_type = '${req.params.type}') and (parent = '${req.body.newReview.parent}') and (author = '${req.body.newReview.author}')
                     and (rating = '${req.body.newReview.rating}') and (submitted_date_time = '${req.body.newReview.submitted_date_time}');`;
         con.query(sql1, function (err1, result1) {

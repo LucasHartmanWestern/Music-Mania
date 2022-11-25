@@ -97,8 +97,8 @@ export class MusicService {
     );
   }
 
-  hideReview(name: string, type: string, review: Reviews): Observable<Reviews[]> {
-    return this.http.post(`${Constants.apiPaths.reviews}/${type}/hide/${name}`, { newReview: review }, {headers: this.httpHeaders}).pipe(
+  toggleReview(name: string, type: string, review: Reviews, visibility: string): Observable<Reviews[]> {
+    return this.http.post(`${Constants.apiPaths.reviews}/${type}/toggle/${name}`, { newReview: review, visibility: visibility }, {headers: this.httpHeaders}).pipe(
       map((res: any) => res)
     ).pipe(
       catchError(this.handleError)

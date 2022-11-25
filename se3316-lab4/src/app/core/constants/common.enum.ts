@@ -7,18 +7,18 @@ export interface Genre {
 }
 
 export interface Track {
-  trackID: string,
-  albumId: number,
-  albumTitle: string,
-  artistName: string,
+  track_id: string,
+  album_id: number,
+  album_title: string,
+  artist_name: string,
   tags: string,
-  trackDateCreated: string,
-  trackDateRecorded: string,
-  trackDuration: string,
-  trackGenres: string,
-  trackNumber: number,
-  trackTitle: string,
-  trackImage: string
+  track_date_created: string,
+  track_date_recorded: string,
+  track_duration: string,
+  track_genres: string,
+  track_number: number,
+  track_title: string,
+  track_image_file: string
 }
 
 export interface Artist {
@@ -33,7 +33,7 @@ export interface Artist {
 export interface Playlist {
   listName: string,
   trackCount: number,
-  trackList: any[],
+  tracks: any[],
   totalPlayTime: number
 }
 
@@ -43,4 +43,17 @@ export interface Credentials {
   access_level?: number | null,
   user?: string | null,
   pass?: string | null
+  username?: string | null,
+  email?: string | null,
+  status?: string | null
+}
+
+export interface Reviews {
+  review_type?: string | null,
+  parent?: string | null,
+  author?: string | null,
+  submitted_date_time?: string | null,
+  body?: string | null,
+  rating?: number | null,
+  visibility?: string | null
 }

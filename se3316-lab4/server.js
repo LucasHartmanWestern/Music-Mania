@@ -38,7 +38,7 @@ con.connect(function(err) {
     con.query("CREATE DATABASE music", function (err, result) {
       if (err) {
       } else {
-        console.log("New database created");
+        //console.log("New database created");
       }
     });
 });
@@ -52,7 +52,7 @@ app.use( (req, res, next) => {
     if(req.path !== '/api/v1/login/credentials') {
       let token = req.header('Authorization');
       jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
-        console.log(decoded);
+        //console.log(decoded);
       });
     }
     next();
@@ -66,8 +66,8 @@ app.get('/api/v1/music/genres', (req, res) => {
 
     var sql = "SELECT * FROM music.genres";
     con.query(sql, function (err, result) {
-        if (err) throw err;
-        res.send(result);
+      if (err) throw err;
+      res.send(result);
     });
 
     // Sent Object Structure:
@@ -129,8 +129,8 @@ app.get('/api/v1/music/tracks', (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) or LOCATE(?, album_title) or LOCATE(?, track_genres) or LOCATE(?, artist_name) limit ?;";
-    con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
+      var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) OR LOCATE(?, album_title) OR LOCATE(?, track_genres) OR LOCATE(?, artist_name) LIMIT ?;";
+      con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
         if (err) throw err;
         res.send(result);
       });
@@ -165,18 +165,18 @@ app.get('/api/v1/music/artists', (req, res) => {
     // Retrieve and verify input parameters
     const name = req.query['name'];
     const limit = req.query['limit'];
-    
+
     const schema = { limit: Joi.number().required(), name: Joi.string().required() };
     const result = Joi.validate({ limit: limit, name: name }, schema);
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    const lim = parseInt(limit);
-    var sql = "SELECT * FROM artists WHERE LOCATE(?, artist_name) limit ?;";
-    con.query(sql,[name,lim], function (err, result) {
+      const lim = parseInt(limit);
+      var sql = "SELECT * FROM music.artists WHERE LOCATE(?, artist_name) LIMIT ?;";
+      con.query(sql,[name,lim], function (err, result) {
         if (err) {
-            res.send (err);
+          res.send (err);
         } else {
-            res.send(result);
+          res.send(result);
         }
       });
     }
@@ -227,16 +227,16 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     const result = Joi.validate(listName, schema);
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "INSERT INTO playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
-    var values = [[listName,0,'[]','00:00']];
-  con.query(sql,[values], function (err, result) {
-    if (err) {
-        res.send("Playlist already exists!");
-    } else {
-        res.send("Playlist created");
+      var sql = "INSERT INTO music.playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
+      var values = [[listName,0,'[]','00:00']];
+      con.query(sql,[values], function (err, result) {
+        if (err) {
+          res.status(400).send("Playlist already exists!");
+        } else {
+          res.send({"tracks": []});
+        }
+      });
     }
-  });
-}
     // Sent Object Structure:
     // {"tracks":[]}
 });
@@ -263,28 +263,27 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "UPDATE playlists SET trackCount = ? WHERE listName = ?"
-    var sql2 = "UPDATE playlists SET tracks = '[?]' WHERE listName = ?"
-    var sql3 = "UPDATE playlists " + 
-                    "SET totalPlayTime = ("+
-                    "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+ 
-                    "FROM tracks WHERE track_id IN (?)"+
-                    ")" + 
-                    "WHERE playlists.listName = ?"
-    var sql4 = "DELETE FROM listcontents WHERE listName = ?"
-    var sql5 = "INSERT INTO listcontents "+
-                    "SELECT * FROM(select listName from playlists where listName = ?) n"+ 
-                    "cross join (SELECT * FROM music.tracks WHERE track_id IN (?)) det"
-    var count = tracks.length;
-    var name = listName;
-  con.query(sql+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
-    if (err) {
-        res.send(err)
-    } else {
-       res.send(req.body);
+      var sql1 =  "UPDATE music.playlists SET trackCount = ? WHERE listName = ?";
+      var sql2 =  "UPDATE music.playlists SET tracks = '[?]' WHERE listName = ?";
+      var sql3 =  "UPDATE music.playlists " +
+                  "SET totalPlayTime = ("+
+                  "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+
+                  "FROM music.tracks WHERE track_id IN (?))"+
+                  "WHERE music.playlists.listName = ?";
+      var sql4 =  "DELETE FROM music.listcontents WHERE listName = ?"
+      var sql5 =  "INSERT INTO music.listcontents "+
+                  "SELECT * FROM(SELECT listName FROM music.playlists WHERE listName = ?) n "+
+                  "CROSS JOIN (SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, track_duration, track_genres, track_image_file, track_number, track_title FROM music.tracks WHERE track_id IN (?)) det"
+      var count = tracks.length;
+      var name = listName;
+      con.query(sql1+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
+        if (err) {
+          res.send(err)
+        } else {
+         res.send(req.body);
+        }
+      });
     }
-});
-}    
 
     // Sent Object Structure:
     // {
@@ -309,16 +308,16 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
-     "track_duration, track_genres, track_image_file, track_number, track_title from listcontents where listName = ?";
-  con.query(sql,[listName], function (err, result) {
-    if (err) {
-        res.send("Playlist doesn't exist!");
-    } else {
-        res.send(result);
+      var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
+                "track_duration, track_genres, track_image_file, track_number, track_title FROM music.listcontents WHERE listName = ?";
+      con.query(sql,[listName], function (err, result) {
+        if (err) {
+          res.status(400).send("Playlist doesn't exist!");
+        } else {
+          res.send(result);
+        }
+      });
     }
-  });
-}
 
     // Sent Object Structure:
     // [
@@ -355,16 +354,17 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-    var sql = "DELETE FROM listcontents WHERE listName = ?"
-    var sql2 = "DELETE FROM playlists WHERE listName = ?"
-    con.query(sql+";"+sql2,[listName,listName], function (err, result) {
+      var sql = "DELETE FROM music.listcontents WHERE listName = ?"
+      var sql2 = "DELETE FROM playlists WHERE listName = ?"
+      con.query(sql+";"+sql2,[listName,listName], function (err, result) {
         if (err) {
-            res.send(err);
+          res.send(err);
         } else {
-            res.send("Playlist deleted");
+          res.send({"tracks": []});
         }
       });
     }
+
     // Sent Object Structure:
     // {
     //    "tracks" : [
@@ -382,14 +382,15 @@ app.get('/api/v1/music/lists', async (req, res) => {
     // N/A
 
     // Get saved list info
-    var sql = "SELECT * FROM playlists";
-  con.query(sql, function (err, result) {
-    if (err) {
+    var sql = "SELECT * FROM music.playlists";
+    con.query(sql, function (err, result) {
+      if (err) {
         res.send("Playlist doesn't exist!");
-    } else {
+      } else {
+        result.map(list => list.tracks = JSON.parse(list.tracks))
         res.send(result);
-    }
-  });
+      }
+    });
 
     // Sent Object Structure:
     // [
@@ -431,7 +432,7 @@ app.post('/api/v1/login/credentials', (req, res) => {
         else {
           const token = jwt.sign({
             exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
-            username: req.body.username,
+            username: result[0].username,
             access_level: result[0].access_level
           }, process.env.JWT_KEY || 'se3316');
           res.send({jwt: token});
@@ -500,6 +501,10 @@ app.put('/api/v1/login/credentials', async (req, res) => {
 });
 
 app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
   let token = req.params.jwt;
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
@@ -510,6 +515,238 @@ app.get('/api/v1/login/credentials/verify/:jwt', async (req, res) => {
       else res.status(200).send('Your credentials have been verified, you can close this page.');
     });
   });
+
+  // Sent Object Structure:
+  // string
+
+});
+
+app.get('/api/v1/login/credentials/all', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level !== 3) return;
+
+    var sql = `SELECT username, email, status, access_level FROM music.credentials;`;
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      else {
+        res.status(200).send(result);
+      }
+    });
+  });
+
+  // Sent Object Structure:
+  // [
+  //  ...
+  //  {
+  //    username: string,
+  //    email: string,
+  //    status: string,
+  //    access_level: int
+  //  }
+  //  ...
+  // ]
+
+});
+
+app.post('/api/v1/login/credentials/update', async (req, res) => {
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level !== 3) res.status(401);
+    else {
+      const schema = { newValue: Joi.string().required(), att: Joi.string().required() };
+      const result = Joi.validate({ newValue: req.body.newValue, att: req.body.att }, schema);
+
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql = `UPDATE music.credentials SET ${req.body.att} = '${req.body.newValue}' WHERE (username = '${req.body.user.username}') AND (email = '${req.body.user.email}');`;
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          else res.status(200);
+        });
+      }
+    }
+  });
+});
+
+// Returns list of reviews
+app.get('/api/v1/music/reviews/:type/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  var sql = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    else {
+      res.status(200).send(result);
+    }
+  });
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+});
+
+// Add new review to list
+app.post('/api/v1/music/reviews/:type/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //  review_type: string,
+  //  parent: string,
+  //  author: string,
+  //  submitted_date_time: string,
+  //  body: string,
+  //  rating: number,
+  //  visibility: string
+  // }
+
+  const schema = {
+    review_type: Joi.string().required().max(10),
+    parent: Joi.string().required().max(300),
+    author: Joi.string().required().max(300),
+    submitted_date_time: Joi.string().required().max(75),
+    body: Joi.string().required(),
+    rating: Joi.number().required(),
+    visibility: Joi.string().required().max(20)
+  };
+  const result = Joi.validate({
+    review_type: req.body.newReview.review_type,
+    parent: req.body.newReview.parent,
+    author: req.body.newReview.author,
+    submitted_date_time: req.body.newReview.submitted_date_time,
+    body: req.body.newReview.body,
+    rating: req.body.newReview.rating,
+    visibility: req.body.newReview.visibility
+  }, schema);
+
+  if (result.error) res.status(400).send(result.error.details[0].message);
+  else {
+    var sql1 = `INSERT INTO music.reviews  (review_type, parent, author, submitted_date_time, body, rating, visibility)
+              VALUES ('${req.body.newReview.review_type}', '${req.body.newReview.parent}', '${req.body.newReview.author}', '${req.body.newReview.submitted_date_time}', '${req.body.newReview.body}', '${req.body.newReview.rating}', '${req.body.newReview.visibility}');`;
+    con.query(sql1, function (err1, result1) {
+      if (err1) res.status(500).send(err1);
+      else {
+        var sql2 = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+        con.query(sql2, function (err2, result2) {
+          if (err2) res.status(500).send(err2);
+          else {
+            res.status(200).send(result2);
+          }
+        });
+      }
+    });
+  }
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+
+});
+
+// Hide review on list
+app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //  review_type: string,
+  //  parent: string,
+  //  author: string,
+  //  submitted_date_time: string,
+  //  body: string,
+  //  rating: number,
+  //  visibility: string
+  // }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level !== 3) res.status(401);
+    else {
+      const schema = {
+        review_type: Joi.string().required().max(10),
+        parent: Joi.string().required().max(300),
+        author: Joi.string().required().max(300),
+        submitted_date_time: Joi.string().required().max(75),
+        body: Joi.string().required(),
+        rating: Joi.number().required(),
+        visibility: Joi.string().required().max(20)
+      };
+      const result = Joi.validate({
+        review_type: req.body.newReview.review_type,
+        parent: req.body.newReview.parent,
+        author: req.body.newReview.author,
+        submitted_date_time: req.body.newReview.submitted_date_time,
+        body: req.body.newReview.body,
+        rating: req.body.newReview.rating,
+        visibility: req.body.newReview.visibility
+      }, schema);
+
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql1 = `UPDATE music.reviews SET visibility = 'Hidden'
+                    WHERE (review_type = '${req.params.type}') and (parent = '${req.body.newReview.parent}') and (author = '${req.body.newReview.author}')
+                    and (rating = '${req.body.newReview.rating}') and (submitted_date_time = '${req.body.newReview.submitted_date_time}');`;
+        con.query(sql1, function (err1, result1) {
+          if (err1) res.status(500).send(err1);
+          else {
+            var sql2 = `SELECT * FROM music.reviews WHERE review_type = '${req.params.type}' AND parent = '${req.params.name}';`;
+            con.query(sql2, function (err2, result2) {
+              if (err2) res.status(500).send(err2);
+              else {
+                res.status(200).send(result2);
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure
+  // [
+  //  ....
+  //  {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  },
+  //  ...
+  // }
+
 });
 
 // Listen to the specified port

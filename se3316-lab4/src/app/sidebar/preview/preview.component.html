@@ -1,11 +1,11 @@
 <div class="preview" [ngClass]="(previewArtist || previewTrack) ? '' : 'empty'">
 
   <ng-container *ngIf="previewTrack">
-    <div class="previewContainer" [style]="'background-image: url(' + previewTrack.trackImage + ')'">
+    <div class="previewContainer" [style]="'background-image: url(' + previewTrack.track_image_file + ')'">
       <div class="trackDetails">
-        <h2>{{previewTrack.trackTitle}}</h2>
-        <span>By: {{previewTrack.artistName}}</span>
-        <span>{{previewTrack.trackDuration}}</span>
+        <h2>{{previewTrack.track_title}}</h2>
+        <span>By: {{previewTrack.artist_name}}</span>
+        <span>{{previewTrack.track_duration}}</span>
       </div>
     </div>
   </ng-container>

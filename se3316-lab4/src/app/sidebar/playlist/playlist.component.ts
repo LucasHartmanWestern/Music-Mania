@@ -2,6 +2,9 @@ import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { MusicService } from "../../core/services/music/music.service";
 import { NgxSpinnerService } from "ngx-spinner";
 import { Credentials, Playlist } from "../../core/constants/common.enum";
+import { JwtHelperService } from "@auth0/angular-jwt";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { UsersComponent } from "../../modals/users/users.component";
 
 @Component({
   selector: 'app-playlist',
@@ -14,9 +17,10 @@ export class PlaylistComponent implements OnInit {
 
   previewAvailable: boolean = false;
   lists: Playlist[] | any = null;
-  guest: boolean = (localStorage.getItem('token') !== 'guest');
+  helper = new JwtHelperService();
+  access_level: number = 0;
 
-  constructor(private musicService: MusicService,  private spinner: NgxSpinnerService) { }
+  constructor(private musicService: MusicService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     this.getLists();
@@ -32,6 +36,9 @@ export class PlaylistComponent implements OnInit {
       if (!val.delete) this.lists[this.lists.findIndex((list: Playlist) => list === val.list)] = val.list;
       else if (val.delete) this.lists.splice(this.lists.findIndex((list: Playlist) => list === val.list), 1);
     });
+
+    this.access_level = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
+    console.log(this.access_level);
   }
 
   // Get and display the genres
@@ -56,25 +63,24 @@ export class PlaylistComponent implements OnInit {
   createList(listName: string): void {
     this.spinner.show();
     this.musicService.createList(listName).subscribe(res => {
-      this.lists.push({listName: listName, trackCount: 0, trackList: [], totalPlayTime: 0});
+      this.lists.push({listName: listName, trackCount: 0, tracks: [], totalPlayTime: '00:00:00'});
       this.musicService.lists$.next({lists: this.lists});
       this.spinner.hide();
     }, error => console.log(error));
   }
 
   getListInfo(list: Playlist): string {
-    return `${list.trackCount} tracks - ${Math.floor(list.totalPlayTime / 60).toLocaleString('en-US', {
-      minimumIntegerDigits: 2,
-      useGrouping: false
-    })}:${(list.totalPlayTime % 60).toLocaleString('en-US', {
-      minimumIntegerDigits: 2,
-      useGrouping: false
-    })} duration`;
+    return `${list.trackCount} tracks - ${list.totalPlayTime} duration`;
+  }
+
+  showUsers(): void {
+    const modalRef = this.modalService.open(UsersComponent, {centered: true, windowClass: 'UsersModalClass'});
   }
 
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});
     this.musicService.searchParams$.next({trackTitle: '', artistTitle: '', albumTitle: ''});
+    this.musicService.selectList$.next({list: null});
   }
 
   logoutOfApp(): void {

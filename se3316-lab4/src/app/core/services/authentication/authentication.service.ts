@@ -39,6 +39,20 @@ export class AuthenticationService {
     );
   }
 
+  getUsers(): Observable<Credentials[]> {
+    return this.http.get<Credentials[]>(`${Constants.apiPaths.credentials}/all`,{headers: this.httpHeaders}).pipe(
+      map((data: Credentials[]) => data),
+      catchError(this.handleError)
+    );
+  }
+
+  updateUser(user: Credentials, newValue: string, att: string): Observable<any> {
+    return this.http.post<any>(`${Constants.apiPaths.credentials}/update`,{user: user, newValue: newValue, att: att},{headers: this.httpHeaders}).pipe(
+      map((data: any) => data),
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(err: HttpErrorResponse) {
 
 

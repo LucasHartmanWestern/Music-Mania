@@ -4,6 +4,7 @@ import {Artist, Genre, Playlist, Track} from "../core/constants/common.enum";
 import { PlaylistSelectorComponent } from "../modals/playlist-selector/playlist-selector.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
+import { ReviewsComponent } from "../modals/reviews/reviews.component";
 
 @Component({
   selector: 'app-track-display',
@@ -40,6 +41,10 @@ export class TrackDisplayComponent implements OnInit {
       this.tracks = val.tracks;
       this.selectedList = val.list;
     });
+
+    this.musicService.selectList$.subscribe((val: {list: any}) => {
+      this.selectedList = val.list;
+    });
   }
 
   // Get and display the genres
@@ -73,17 +78,25 @@ export class TrackDisplayComponent implements OnInit {
     }, error => console.log(error));
   }
 
+  openReview(name: string, list: boolean) {
+    const modalRef = this.modalService.open(ReviewsComponent, {centered: true, windowClass: 'ReviewsModalClass'});
+    modalRef.componentInstance.name = name;
+    modalRef.componentInstance.list = list;
+  }
+
   // Open list selector modal and add to playlist
   addToList(track: Track): void {
     const modalRef = this.modalService.open(PlaylistSelectorComponent, {centered: true, windowClass: 'PlaylistSelectorModalClass'});
     modalRef.componentInstance.trackToInsert = track;
     modalRef.componentInstance.lists = this.lists;
 
-    modalRef.componentInstance.selectedPlaylist.subscribe((playlist: Playlist) => {
-      this.musicService.updateList(playlist, [parseInt(track?.trackID), ...playlist?.trackList?.map(track => parseInt(track))]).subscribe((res: any) => {
-        playlist.trackList = res.tracks;
+    console.log(track);
+
+    modalRef.componentInstance.selectedPlaylist.subscribe((playlist: any) => {
+      this.musicService.updateList(playlist, [parseInt(track?.track_id), ...playlist?.tracks?.map((track: string) => parseInt(track))]).subscribe((res: any) => {
+        playlist.tracks = res.tracks;
         // @ts-ignore
-        playlist.totalPlayTime += parseInt(track.trackDuration.split(':')[0] * 60) + parseInt(track.trackDuration.split(':')[1]);
+        playlist.totalPlayTime = this.updateTime(playlist.totalPlayTime, track.track_duration, true);
         playlist.trackCount += 1;
 
         this.musicService.updatedList$.next({list: playlist, delete: false});
@@ -91,17 +104,33 @@ export class TrackDisplayComponent implements OnInit {
     });
   }
 
-  // Open list selector modal and add to playlist
+  // Remove selected track from playlist
   removeFromList(track: Track): void {
-    this.musicService.updateList(this.selectedList, this.selectedList?.trackList.filter((element: any) => element != track.trackID).map((e: string) => parseInt(e))).subscribe((res: any) => {
-      this.selectedList.trackList = res.tracks;
+    this.musicService.updateList(this.selectedList, this.selectedList?.tracks.filter((element: any) => element != track.track_id).map((e: string) => parseInt(e))).subscribe((res: any) => {
+      this.selectedList.tracks = res.tracks;
       // @ts-ignore
-      this.selectedList.totalPlayTime -= parseInt(track.trackDuration.split(':')[0] * 60) + parseInt(track.trackDuration.split(':')[1]);
+      this.selectedList.totalPlayTime = this.updateTime(this.selectedList.totalPlayTime, track.track_duration, false);
       this.selectedList.trackCount -= 1;
 
       this.musicService.updatedList$.next({list: this.selectedList, delete: false});
     });
     this.tracks.splice(this.tracks.findIndex((t: Track) => t === track), 1);
+  }
+
+  updateTime(currentTime: string, modifyBy: string, add: boolean): string {
+    let oldTime = parseInt(currentTime.split(':')[0]) * 60 + parseInt(currentTime.split(':')[1]) + parseInt(currentTime.split(':')[2]) / 60;
+    let modifiedTime = parseInt(modifyBy.split(':')[0]) * 60 + parseInt(modifyBy.split(':')[1]);
+    let newTime = 0;
+    if (add) newTime = modifiedTime + oldTime;
+    else newTime = oldTime - modifiedTime;
+
+    return `${Math.floor(newTime / 60).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })}:${Math.floor(newTime % 60).toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })}:00`;
   }
 
   deleteList(list: Playlist): void {
@@ -111,6 +140,13 @@ export class TrackDisplayComponent implements OnInit {
     this.tracks = [];
     this.musicService.updatedList$.next({list: this.selectedList, delete: true});
     this.selectedList = null;
+  }
+
+  renameList(event: any, newName: string): void {
+    if (newName) {
+      event.preventDefault();
+      this.selectedList.listName = newName;
+    }
   }
 
   preview(type: string, preview: any): void {

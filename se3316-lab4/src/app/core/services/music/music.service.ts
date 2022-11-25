@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { Genre, Track, Artist, Playlist } from "../../constants/common.enum";
+import { Genre, Track, Artist, Playlist, Reviews } from "../../constants/common.enum";
 import { Constants } from "../../constants/constants";
 
 @Injectable({
@@ -18,6 +18,7 @@ export class MusicService {
   lists$: Subject <{ lists: Playlist[] | any }> = new Subject<{ lists: Playlist[] | any }>();
   updatedList$: Subject <{ list: Playlist | any, delete: boolean }> = new Subject<{ list: Playlist | any, delete: boolean }>();
   listTracks$: Subject <{ list: Playlist, tracks: Track[] | any }> = new Subject<{ list: Playlist, tracks: Track[] | any }>();
+  selectList$: Subject <{ list: any }> = new Subject<{ list: any }>();
 
   httpHeaders = new HttpHeaders({
     'Authorization': localStorage.getItem('token') || 'N/A'
@@ -74,6 +75,30 @@ export class MusicService {
 
   deleteList(listName: string): Observable<Playlist[]> {
     return this.http.delete(`${Constants.apiPaths.playlists}/${listName}`, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getReviews(name: string, type: string): Observable<Reviews[]> {
+    return this.http.get(`${Constants.apiPaths.reviews}/${type}/${name}`, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  addReview(name: string, type: string, review: Reviews): Observable<Reviews[]> {
+    return this.http.post(`${Constants.apiPaths.reviews}/${type}/${name}`, { newReview: review }, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  hideReview(name: string, type: string, review: Reviews): Observable<Reviews[]> {
+    return this.http.post(`${Constants.apiPaths.reviews}/${type}/hide/${name}`, { newReview: review }, {headers: this.httpHeaders}).pipe(
       map((res: any) => res)
     ).pipe(
       catchError(this.handleError)

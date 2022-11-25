@@ -1,0 +1,42 @@
+<div class="modalBody">
+  <h1>{{name}} Reviews</h1>
+
+  <div class="stars d-flex justify-content-center mb-3">
+    <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= rating() ? '★' : '☆'}}</span>
+  </div>
+
+  <div class="reviewBody" *ngIf="filteredReviews().length">
+    <div *ngFor="let review of filteredReviews(); index as i" class="review" [ngClass]="{'border-bottom': (i !== (filteredReviews().length - 1))}">
+      <span class="body">{{review.body}}</span>
+      <div class="reviewDetails">
+        <div class="d-flex">
+          <span *ngFor="let r of ['', '', '', '', '']; index as i">{{i <= (review?.rating || 0) ? '★' : '☆'}}</span>
+        </div>
+        <span>{{review.author}}</span>
+        <span>{{review.submitted_date_time}}</span>
+        <span class="hideReview" *ngIf="accessLvl === 3" (click)="hideReview(review)">Hide</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="accessLvl > 0">
+    <form (submit)="createReview($event, text.value, rating.value); text.value = '';">
+      <label>Submit your own review</label>
+      <select #rating>
+        <option value="0">0 Stars</option>
+        <option value="1">1 Stars</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
+      <textarea type="text" placeholder="Write review here..." #text></textarea>
+      <input type="submit">
+    </form>
+  </ng-container>
+
+  <div class="close">
+    <button (click)="close()">Close</button>
+  </div>
+
+</div>

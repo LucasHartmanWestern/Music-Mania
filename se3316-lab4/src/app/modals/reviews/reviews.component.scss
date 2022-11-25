@@ -1,0 +1,112 @@
+.modalBody {
+  padding: 24px;
+  position: relative;
+
+  h1 {
+    text-align: center;
+    text-decoration: underline;
+  }
+
+  .stars {
+    font-size: 24px;
+  }
+
+  .reviewBody {
+    max-height: 40vh;
+    overflow-y: scroll;
+    border: 1px solid #ecf0f1;
+    border-radius: 12px;
+    padding: 12px;
+
+    .review {
+      .body {
+        font-size: 18px;
+        display: flex;
+      }
+      .reviewDetails {
+        display: block;
+        font-size: 10px;
+        color: black;
+        justify-content: space-between;
+        margin: 8px 0;
+        position: relative;
+
+        span {
+          display: block;
+        }
+
+        .hideReview {
+          cursor: pointer;
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          font-size: 16px;
+          border: 1px solid #ecf0f1;
+          border-radius: 12px;
+          padding: 2px 16px;
+        }
+      }
+    }
+
+    .border-bottom {
+      border-bottom: 1px solid #ecf0f1;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+    }
+  }
+
+  form {
+    display: block;
+    margin-top: 24px;
+    border: 1px solid #ecf0f1;
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+
+
+    textarea {
+      display: block;
+      height: 100px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    input[type=submit] {
+      border: none;
+      border-radius: 12px;
+      background-color: #ecf0f1;
+      padding: 4px 24px;
+      margin-top: 4px;
+    }
+
+    select {
+      border: none;
+      border-radius: 12px;
+      background-color: #ecf0f1;
+      padding: 4px 24px;
+      margin-top: 4px;
+      margin-left: 16px;
+      box-shadow: none;
+      position: absolute;
+      top: 4px;
+      right: 24px;
+    }
+  }
+
+  .close {
+    width: 100%;
+    text-align: center;
+    margin-top: 24px;
+
+    button {
+      margin: 12px;
+      border: 2px solid #d91626;
+      border-radius: 16px;
+      background-color: transparent;
+      padding: 8px 24px;
+      font-weight: bold;
+      color: #d91626;
+    }
+  }
+}

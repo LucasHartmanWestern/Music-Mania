@@ -6,6 +6,7 @@ export const Constants = {
     tracks: `${serverPrefix}/music/tracks`,
     artists: `${serverPrefix}/music/artists`,
     playlists: `${serverPrefix}/music/lists`,
+    reviews: `${serverPrefix}/music/reviews`,
     credentials: `${serverPrefix}/login/credentials`
   }
 }

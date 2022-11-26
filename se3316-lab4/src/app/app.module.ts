@@ -20,6 +20,7 @@ import { UsersComponent } from './modals/users/users.component';
 import { PasswordResetComponent } from './login/password-reset/password-reset.component';
 import { MainComponent } from './main/main.component';
 import { AccountVerifyComponent } from './login/account-verify/account-verify.component';
+import { ConfirmComponent } from './modals/confirm/confirm.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { AccountVerifyComponent } from './login/account-verify/account-verify.co
     UsersComponent,
     PasswordResetComponent,
     MainComponent,
-    AccountVerifyComponent
+    AccountVerifyComponent,
+    ConfirmComponent
   ],
   imports: [
     BrowserModule,

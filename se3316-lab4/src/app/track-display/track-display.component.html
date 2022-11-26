@@ -20,8 +20,10 @@
     <ng-container *ngIf="selectedList">
       <div class="header">
         <button class="review" (click)="openReview(selectedList.listName, true)">Write a review</button>
-        <span [ngbPopover]="editName" placement="left" [autoClose]="'outside'" #renamePopover="ngbPopover">{{selectedList.listName}}</span>
-        <button (click)="deleteList(selectedList)">X</button>
+
+        <button class="visibility" (click)="updateVisibility(selectedList, selectedList.visibility === 'Private' ? 'Public' : 'Private')" *ngIf="username === selectedList.owner">{{selectedList.visibility === 'Private' ? 'Make Public' : 'Make Private'}}</button>
+        <span [ngbPopover]="username === selectedList.owner ? editName : ''" placement="left" [autoClose]="'outside'" #renamePopover="ngbPopover">{{selectedList.listName}}</span>
+        <button (click)="deleteList(selectedList)" *ngIf="username === selectedList.owner">X</button>
 
         <ng-template #editName>
           <form (submit)="renameList($event, newName.value); renamePopover.close()">
@@ -31,6 +33,13 @@
         </ng-template>
 
       </div>
+
+      <div class="descriptionArea">
+        <button *ngIf="selectedList.owner === username" (click)="editDescription ? saveDescription(description.value): '';editDescription = !editDescription">{{editDescription ? 'Save Changes' : 'Edit Description'}}</button>
+        <span [hidden]="selectedList?.description && editDescription !== false">{{selectedList?.description}}</span>
+        <textarea [hidden]="!editDescription" [value]="selectedList?.description || ''" [placeholder]="'New description...'" #description></textarea>
+      </div>
+
     </ng-container>
 
     <table>

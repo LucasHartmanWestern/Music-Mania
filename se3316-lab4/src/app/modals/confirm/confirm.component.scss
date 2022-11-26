@@ -1,0 +1,28 @@
+.modal-body {
+  display: block;
+
+  span {
+    display: block;
+    text-align: center;
+    font-size: 24px;
+  }
+
+  button {
+    border-radius: 12px;
+    margin: 12px;
+    padding: 4px 12px;
+    font-size: 24px;
+
+    &.confirm {
+      background-color: #d0f7d0;
+      border: 2px solid green;
+      color: green;
+    }
+
+    &.cancel {
+      background-color: #f2dede;
+      border: 2px solid #b94a48;
+      color: #b94a48;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { JwtHelperService } from "@auth0/angular-jwt";
 import { MusicService } from "../../core/services/music/music.service";
@@ -14,6 +14,7 @@ export class ReviewsComponent implements OnInit {
 
   @Input() name: string = '';
   @Input() list: boolean = false;
+  @Output() listUpdated = new EventEmitter<boolean>();
 
   reviewList: Reviews[] = [];
 
@@ -35,8 +36,9 @@ export class ReviewsComponent implements OnInit {
     this.accessLvl = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
   }
 
-  filteredReviews(): Reviews[] {
-    return this.reviewList.filter(review => review.visibility === 'Visible');
+  filteredReviews(showHidden?: boolean): Reviews[] {
+    if (showHidden) return this.reviewList.filter(review => review.visibility === 'Hidden');
+    else return this.reviewList.filter(review => review.visibility === 'Visible');
   }
 
   rating(): number {
@@ -57,12 +59,14 @@ export class ReviewsComponent implements OnInit {
     let reqBody: Reviews = {
       body: review,
       author: this.username,
-      submitted_date_time: `${[currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()].join('-')} ${[currentDate.getHours(), currentDate.getMinutes()].join(':')}`,
+      submitted_date_time: this.getDate(new Date()),
       rating: parseInt(rating),
       visibility: "Visible",
       parent: this.name,
       review_type: this.list ? 'List' : 'Track'
     }
+
+    if (this.list) this.listUpdated.emit(true);
 
     this.spinner.show();
     this.musicService.addReview(this.name, this.list ? 'List' : 'Track', reqBody).subscribe(res => {
@@ -71,9 +75,22 @@ export class ReviewsComponent implements OnInit {
     })
   }
 
-  hideReview(review: Reviews): void {
+  getDate(date: any): string {
+    return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getMinutes().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getSeconds().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })].join(':')}`
+  }
+
+  toggleReview(review: Reviews, visibility: string): void {
     this.spinner.show();
-    this.musicService.hideReview(this.name, this.list ? 'List' : 'Track', review).subscribe(res => {
+    this.musicService.toggleReview(this.name, this.list ? 'List' : 'Track', review, visibility).subscribe(res => {
       this.reviewList = res;
       this.spinner.hide();
     })

@@ -17,6 +17,12 @@
     border: 1px solid #ecf0f1;
     border-radius: 12px;
     padding: 12px;
+    margin-bottom: 24px;
+
+    h4 {
+      text-align: center;
+      text-decoration: underline;
+    }
 
     .review {
       .body {
@@ -57,7 +63,6 @@
 
   form {
     display: block;
-    margin-top: 24px;
     border: 1px solid #ecf0f1;
     border-radius: 12px;
     padding: 24px;

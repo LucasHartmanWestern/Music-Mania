@@ -32,6 +32,19 @@ var transporter = nodemailer.createTransport({
   }
 });
 
+let getDate = (date) =>  {
+  return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
+    minimumIntegerDigits: 2,
+    useGrouping: false
+  }), date.getMinutes().toLocaleString('en-US', {
+    minimumIntegerDigits: 2,
+    useGrouping: false
+  }), date.getSeconds().toLocaleString('en-US', {
+    minimumIntegerDigits: 2,
+    useGrouping: false
+  })].join(':')}`
+}
+
 con.connect(function(err) {
     if (err) throw err;
     console.log("Connected to DB");
@@ -221,24 +234,139 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     // Received Object Structure:
     // tracks: []
 
-    // Retrieve and verify input parameter and body
-    let listName = req.params.listName;
-    const schema = Joi.string().required().max(25);
-    const result = Joi.validate(listName, schema);
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-      var sql = "INSERT INTO music.playlists (listName, trackCount, tracks, totalPlayTime) VALUES ?";
-      var values = [[listName,0,'[]','00:00']];
-      con.query(sql,[values], function (err, result) {
-        if (err) {
-          res.status(400).send("Playlist already exists!");
-        } else {
-          res.send({"tracks": []});
+    let token = req.header('Authorization');
+    jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+      if (err) res.status(500);
+      if (decoded.access_level <= 0) {
+        res.stats(400).send("Not authorized")
+        return;
+      } else {
+        // Retrieve and verify input parameter and body
+        let listName = req.params.listName;
+        const schema = Joi.string().required().max(25);
+        const result = Joi.validate(listName, schema);
+        if (result.error) res.status(400).send(result.error.details[0].message);
+        else {
+          var sql = "INSERT INTO music.playlists (listName, owner, trackCount, tracks, totalPlayTime, lastModified) VALUES ?";
+          var values = [[listName, decoded.username,0,'[]','00:00', getDate(new Date())]];
+          con.query(sql,[values], function (err, result) {
+            if (err) {
+              res.status(400).send("Playlist already exists!");
+            } else {
+              res.send({"tracks": []});
+            }
+          });
         }
-      });
-    }
+      }
+    });
+
     // Sent Object Structure:
     // {"tracks":[]}
+});
+
+// Make a playlist public
+app.put('/api/v1/music/lists/visibility/:listName/:visibility', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level <= 0) {
+      res.stats(400).send("Not authorized")
+      return;
+    } else {
+      // Retrieve and verify input parameter and body
+      let listName = req.params.listName;
+      const schema = { listName: Joi.string().required().max(25), visibility: Joi.string().required().max(20) } ;
+      const result = Joi.validate({ listName: listName, visibility: req.params.visibility }, schema);
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql = `UPDATE music.playlists SET visibility = '${req.params.visibility}', lastModified = '${getDate(new Date())}' WHERE (listName = '${req.params.listName}') and (owner = '${decoded.username}');`;
+        con.query(sql, function (err, result) {
+          if (err) {
+            res.status(400).send("Playlist not found!");
+          } else {
+            res.send({ message: 'Success' });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure:
+  // { message: string }
+});
+
+// Rename playlist
+app.put('/api/v1/music/lists/rename/renameList/rename', async (req, res) => {
+
+  // Received Object Structure:
+  // { oldName: string, newName: string }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level <= 0) {
+      res.stats(400).send("Not authorized")
+      return;
+    } else {
+      // Retrieve and verify input parameter and body
+      let listName = req.params.listName;
+      const schema = { oldName: Joi.string().required(), newName: Joi.string().required() } ;
+      const result = Joi.validate({ oldName: req.body.oldName, newName: req.body.newName }, schema);
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql1 = `UPDATE music.playlists SET listName = '${req.body.newName}', lastModified = '${getDate(new Date())}' WHERE (listName = '${req.body.oldName}') and (owner = '${decoded.username}');`;
+        con.query(sql1, function (err, result) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.send({ message: 'Success' });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure:
+  // { message: string }
+});
+
+// Rename playlist
+app.put('/api/v1/music/lists/description/update/:listName', async (req, res) => {
+
+  // Received Object Structure:
+  // { description: string }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level <= 0) {
+      res.stats(400).send("Not authorized")
+      return;
+    } else {
+      // Retrieve and verify input parameter and body
+      let listName = req.params.listName;
+      const schema = { listName: Joi.string().required(), description: Joi.string().required().max(3000) } ;
+      const result = Joi.validate({ listName: req.params.listName, description: req.body.description }, schema);
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql1 = `UPDATE music.playlists SET description = '${req.body.description}' WHERE (listName = '${req.params.listName}') and (owner = '${decoded.username}');`;
+        con.query(sql1, function (err, result) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.send({ message: 'Success' });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure:
+  // { message: string }
 });
 
 // Save a list of track IDs to a given list name
@@ -255,35 +383,48 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     //    ]
     // }
 
-    // Retrieve and verify input parameter and body
-    let listName = req.params.listName;
-    const {tracks} = req.body;
-    const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
-    const result = Joi.validate({list: listName, body: req.body}, schema);
+    let token = req.header('Authorization');
+    jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+      if (err) res.status(500);
+      if (decoded.access_level <= 0) {
+        res.stats(400).send("Not authorized")
+        return;
+      } else {
+        // Retrieve and verify input parameter and body
+        let listName = req.params.listName;
+        const {tracks} = req.body;
+        const schema = { list: Joi.string().required(), body: { tracks: Joi.array().items(Joi.number()).required() } };
+        const result = Joi.validate({list: listName, body: req.body}, schema);
 
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-      var sql1 =  "UPDATE music.playlists SET trackCount = ? WHERE listName = ?";
-      var sql2 =  "UPDATE music.playlists SET tracks = '[?]' WHERE listName = ?";
-      var sql3 =  "UPDATE music.playlists " +
-                  "SET totalPlayTime = ("+
-                  "SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))"+
-                  "FROM music.tracks WHERE track_id IN (?))"+
-                  "WHERE music.playlists.listName = ?";
-      var sql4 =  "DELETE FROM music.listcontents WHERE listName = ?"
-      var sql5 =  "INSERT INTO music.listcontents "+
-                  "SELECT * FROM(SELECT listName FROM music.playlists WHERE listName = ?) n "+
-                  "CROSS JOIN (SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, track_duration, track_genres, track_image_file, track_number, track_title FROM music.tracks WHERE track_id IN (?)) det"
-      var count = tracks.length;
-      var name = listName;
-      con.query(sql1+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,name,tracks,name, tracks,name,name,name,tracks], function (err, result) {
-        if (err) {
-          res.send(err)
-        } else {
-         res.send(req.body);
+        if (result.error) res.status(400).send(result.error.details[0].message);
+        else {
+          var count = tracks.length;
+          var name = listName;
+
+          var sql1 =  `UPDATE music.playlists SET trackCount = ?, lastModified = ? WHERE listName = ? AND owner = ?`;
+          var sql2 =  `UPDATE music.playlists SET tracks = '[?]' WHERE listName = ? AND owner = ?`;
+          var sql3 =  `UPDATE music.playlists
+                       SET totalPlayTime = (
+                          SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(track_duration)))
+                          FROM music.tracks WHERE track_id IN (?))
+                       WHERE music.playlists.listName = ? AND music.playlists.owner = ?`;
+          var sql4 =  `DELETE FROM music.listcontents WHERE listName = ? AND owner = ?`;
+          var sql5 =  `INSERT INTO music.listcontents
+                          SELECT * FROM(
+                            SELECT listName, owner FROM music.playlists WHERE listName = ? AND owner = ?) n
+                          CROSS JOIN (
+                            SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, track_duration, track_genres, track_image_file, track_number, track_title FROM music.tracks WHERE track_id IN (?)) det`
+
+          con.query(sql1+";"+sql2+";"+sql3+";"+sql4+";"+sql5,[count,getDate(new Date()),name,decoded.username,tracks,name,decoded.username,tracks,name,decoded.username,name,decoded.username,name,decoded.username,tracks], function (err, result) {
+            if (err) {
+              res.send(err)
+            } else {
+              res.send(req.body);
+            }
+          });
         }
-      });
-    }
+      }
+    });
 
     // Sent Object Structure:
     // {
@@ -301,23 +442,40 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     // Received Object Structure:
     // N/A
 
-    // Retrieve and verify input parameter
-    let listName = req.params.listName;
-    const schema = Joi.string().required();
-    const result = Joi.validate(listName, schema);
+    let token = req.header('Authorization');
+    jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+      if (err) res.status(500);
+      if (decoded.access_level <= 0) {
+        res.stats(400).send("Not authorized")
+        return;
+      } else {
+        // Retrieve and verify input parameter
+        let listName = req.params.listName;
+        const schema = Joi.string().required();
+        const result = Joi.validate(listName, schema);
 
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-      var sql = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
-                "track_duration, track_genres, track_image_file, track_number, track_title FROM music.listcontents WHERE listName = ?";
-      con.query(sql,[listName], function (err, result) {
-        if (err) {
-          res.status(400).send("Playlist doesn't exist!");
-        } else {
-          res.send(result);
+        if (result.error) res.status(400).send(result.error.details[0].message);
+        else {
+          var sql1 = "SELECT listName, owner FROM music.playlists WHERE listName = ? AND (owner = ? OR visibility = 'Public')";
+          con.query(sql1,[listName, decoded.username], function (err1, result1) {
+            if (err1) {
+              res.status(400).send("Playlist doesn't exist!");
+            } else {
+              var sql2 = "SELECT track_id, album_id, album_title, artist_name, tags, track_date_created, track_date_recorded, "+
+                "track_duration, track_genres, track_image_file, track_number, track_title FROM music.listcontents WHERE listName = ? AND owner = ?";
+              con.query(sql2,[result1[0].listName, result1[0].owner], function (err2, result2) {
+                if (err2) {
+                  res.status(500).send(err2);
+                } else {
+                  res.send(result2);
+                }
+              });
+            }
+          });
+
         }
-      });
-    }
+      }
+    });
 
     // Sent Object Structure:
     // [
@@ -347,23 +505,32 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
     // Received Object Structure:
     // N/A
 
-    // Retrieve and verify input parameter
-    let listName = req.params.listName;
-    const schema = Joi.string().required();
-    const result = Joi.validate(listName, schema);
+    let token = req.header('Authorization');
+    jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+      if (err) res.status(500);
+      if (decoded.access_level <= 0) {
+        res.stats(400).send("Not authorized")
+        return;
+      } else {
+        // Retrieve and verify input parameter
+        let listName = req.params.listName;
+        const schema = Joi.string().required();
+        const result = Joi.validate(listName, schema);
 
-    if (result.error) res.status(400).send(result.error.details[0].message);
-    else {
-      var sql = "DELETE FROM music.listcontents WHERE listName = ?"
-      var sql2 = "DELETE FROM playlists WHERE listName = ?"
-      con.query(sql+";"+sql2,[listName,listName], function (err, result) {
-        if (err) {
-          res.send(err);
-        } else {
-          res.send({"tracks": []});
+        if (result.error) res.status(400).send(result.error.details[0].message);
+        else {
+          var sql = "DELETE FROM music.listcontents WHERE listName = ? AND owner = ?"
+          var sql2 = "DELETE FROM music.playlists WHERE listName = ? AND owner = ?"
+          con.query(sql+";"+sql2,[listName, decoded.username,listName, decoded.username], function (err, result) {
+            if (err) {
+              res.send(err);
+            } else {
+              res.send({"tracks": []});
+            }
+          });
         }
-      });
-    }
+      }
+    });
 
     // Sent Object Structure:
     // {
@@ -381,14 +548,23 @@ app.get('/api/v1/music/lists', async (req, res) => {
     // Received Object Structure:
     // N/A
 
-    // Get saved list info
-    var sql = "SELECT * FROM music.playlists";
-    con.query(sql, function (err, result) {
-      if (err) {
-        res.send("Playlist doesn't exist!");
+    let token = req.header('Authorization');
+    jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+      if (err) res.status(500);
+      if (decoded.access_level <= 0) {
+        res.stats(400).send("Not authorized")
+        return;
       } else {
-        result.map(list => list.tracks = JSON.parse(list.tracks))
-        res.send(result);
+        // Get saved list info
+        var sql = `SELECT * FROM music.playlists WHERE owner = '${decoded.username}' OR visibility = 'Public' ORDER BY lastModified DESC`;
+        con.query(sql, function (err, result) {
+          if (err) {
+            res.send("Playlist doesn't exist!");
+          } else {
+            result.map(list => list.tracks = JSON.parse(list.tracks))
+            res.send(result);
+          }
+        });
       }
     });
 
@@ -765,16 +941,19 @@ app.post('/api/v1/music/reviews/:type/:name', async (req, res) => {
 });
 
 // Hide review on list
-app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
+app.post('/api/v1/music/reviews/:type/toggle/:name', async (req, res) => {
 
   // Received Object Structure:
   // {
-  //  review_type: string,
-  //  parent: string,
-  //  author: string,
-  //  submitted_date_time: string,
-  //  body: string,
-  //  rating: number,
+  //  newReview: {
+  //    review_type: string,
+  //    parent: string,
+  //    author: string,
+  //    submitted_date_time: string,
+  //    body: string,
+  //    rating: number,
+  //    visibility: string
+  //  }
   //  visibility: string
   // }
 
@@ -804,7 +983,7 @@ app.post('/api/v1/music/reviews/:type/hide/:name', async (req, res) => {
 
       if (result.error) res.status(400).send(result.error.details[0].message);
       else {
-        var sql1 = `UPDATE music.reviews SET visibility = 'Hidden'
+        var sql1 = `UPDATE music.reviews SET visibility = '${req.body.visibility}'
                     WHERE (review_type = '${req.params.type}') and (parent = '${req.body.newReview.parent}') and (author = '${req.body.newReview.author}')
                     and (rating = '${req.body.newReview.rating}') and (submitted_date_time = '${req.body.newReview.submitted_date_time}');`;
         con.query(sql1, function (err1, result1) {

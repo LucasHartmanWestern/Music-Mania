@@ -9,6 +9,36 @@
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   padding: 12px;
 
+  .descriptionArea {
+    display: flex;
+
+    button {
+      background-color: transparent;
+      border: 1px solid #ecf0f1;
+      border-radius: 12px;
+      font-size: 16px;
+      padding: 4px 12px;
+      margin: 12px 24px 12px 0;
+    }
+
+    span {
+      display: block;
+      width: calc(100% - 200px);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      margin: auto 0;
+    }
+
+    textarea {
+      height: 36px;
+      margin: 12px 0 -12px 0;
+      width: calc(100% - 148px);
+      border-radius: 12px;
+      padding: 4px 12px;
+    }
+  }
+
   .header {
     font-size: 2.4rem;
     display: flex;
@@ -30,7 +60,17 @@
       background-color: #ecf0f1;
     }
 
-    button:not(.review) {
+    .visibility {
+      position: absolute;
+      right: 0;
+      border: none;
+      font-size: 28px;
+      border-radius: 12px;
+      padding: 8px 24px;
+      background-color: #ecf0f1;
+    }
+
+    button:not(.review):not(.visibility) {
       outline: none;
       background-color: transparent;
       border: none;

@@ -6,7 +6,7 @@
     {{access_level == 3 ? '|' : ''}}<button *ngIf="access_level == 3" (click)="showUsers()">Users</button>
   </div>
   <div class="lists">
-    <div><button class="createList" [ngbPopover]="listNameCreator" placement="bottom" [autoClose]="'outside'" #selectorPopover="ngbPopover">+ Create new list</button></div>
+    <div [hidden]="access_level <= 0"><button class="createList" [ngbPopover]="listNameCreator" placement="bottom" [autoClose]="'outside'" #selectorPopover="ngbPopover">+ Create new list</button></div>
 
     <div *ngFor="let list of displayLists()" class="list" (click)="readList(list)">
       <span class="listName">{{list.listName}}</span>

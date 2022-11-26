@@ -23,6 +23,7 @@ export class TrackDisplayComponent implements OnInit {
   helper = new JwtHelperService();
   editDescription: boolean = false;
   username = this.helper.decodeToken(localStorage.getItem('token') || undefined).username;
+  access_level = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
 
   sortTracking = {index: -1, sort: 'ASC'};
 

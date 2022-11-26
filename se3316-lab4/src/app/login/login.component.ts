@@ -99,11 +99,14 @@ export class LoginComponent implements OnInit {
   continueAsGuest(): void {
     // Assign guest account
     this.spinner.show();
-
-    this.credentials.emit({jwt: 'guest'});
-    localStorage.setItem('token', 'guest');
-
-    this.spinner.hide();
+    this.authenticationService.continueAsGuest().subscribe(res => {
+      this.spinner.hide();
+      this.credentials.emit({jwt: res.jwt});
+      localStorage.setItem('token', res.jwt);
+    }, error => {
+      this.spinner.hide();
+      this.error = error;
+    });
   }
 
 }

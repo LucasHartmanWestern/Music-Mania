@@ -21,7 +21,7 @@
 
   <div class="reviewBody" *ngIf="filteredReviews(true).length && accessLvl === 3">
     <h4>Hidden Reviews</h4>
-    <div *ngFor="let review of filteredReviews(true); index as i" class="review" [ngClass]="{'border-bottom': (i !== (filteredReviews().length - 1))}">
+    <div *ngFor="let review of filteredReviews(true); index as i" class="review" [ngClass]="{'border-bottom': (i !== (filteredReviews(true).length - 1))}">
       <span class="body">{{review.body}}</span>
       <div class="reviewDetails">
         <div class="d-flex">

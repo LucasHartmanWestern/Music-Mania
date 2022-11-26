@@ -121,6 +121,14 @@ export class MusicService {
     );
   }
 
+  updateDescription(listName: string, description: string): Observable<Reviews[]> {
+    return this.http.put(`${Constants.apiPaths.playlists}/description/update/${listName}`, { description: description }, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(err: HttpErrorResponse) {
     let errorMessage = '';
     if (err.error instanceof ErrorEvent) {

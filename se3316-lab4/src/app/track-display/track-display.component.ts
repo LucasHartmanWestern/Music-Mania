@@ -6,6 +6,7 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ReviewsComponent } from "../modals/reviews/reviews.component";
 import { JwtHelperService } from "@auth0/angular-jwt";
+import {ConfirmComponent} from "../modals/confirm/confirm.component";
 
 @Component({
   selector: 'app-track-display',
@@ -20,6 +21,7 @@ export class TrackDisplayComponent implements OnInit {
   lists: Playlist[] = [];
   selectedList: Playlist | any = null;
   helper = new JwtHelperService();
+  editDescription: boolean = false;
   username = this.helper.decodeToken(localStorage.getItem('token') || undefined).username;
 
   sortTracking = {index: -1, sort: 'ASC'};
@@ -145,12 +147,16 @@ export class TrackDisplayComponent implements OnInit {
   }
 
   deleteList(list: Playlist): void {
-    this.musicService.deleteList(list.listName).subscribe(res => {
-      console.log(res);
+    const modalRef = this.modalService.open(ConfirmComponent, {centered: true, windowClass: 'ConfirmModalClass'});
+    modalRef.componentInstance.message = 'Are you sure you want to delete this playlist?';
+    modalRef.componentInstance.confirmed.subscribe((res: boolean) => {
+      this.musicService.deleteList(list.listName).subscribe(res => {
+        console.log(res);
+      });
+      this.tracks = [];
+      this.musicService.updatedList$.next({list: this.selectedList, delete: true});
+      this.selectedList = null;
     });
-    this.tracks = [];
-    this.musicService.updatedList$.next({list: this.selectedList, delete: true});
-    this.selectedList = null;
   }
 
   renameList(event: any, newName: string): void {
@@ -163,6 +169,12 @@ export class TrackDisplayComponent implements OnInit {
         this.musicService.updatedList$.next({list: this.selectedList, delete: false});
       });
     }
+  }
+
+  saveDescription(newDescription: string): void {
+    this.musicService.updateDescription(this.selectedList.listName, newDescription).subscribe(res => {
+      this.selectedList.description = newDescription;
+    });
   }
 
   updateVisibility(list: Playlist, visibility: string): void {

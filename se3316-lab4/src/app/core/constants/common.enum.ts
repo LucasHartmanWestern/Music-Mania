@@ -33,6 +33,7 @@ export interface Artist {
 export interface Playlist {
   listName: string,
   trackCount: number,
+  description?: string,
   tracks: any[],
   totalPlayTime: number,
   lastModified: string,

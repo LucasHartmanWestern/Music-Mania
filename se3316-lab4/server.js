@@ -334,6 +334,41 @@ app.put('/api/v1/music/lists/rename/renameList/rename', async (req, res) => {
   // { message: string }
 });
 
+// Rename playlist
+app.put('/api/v1/music/lists/description/update/:listName', async (req, res) => {
+
+  // Received Object Structure:
+  // { description: string }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level <= 0) {
+      res.stats(400).send("Not authorized")
+      return;
+    } else {
+      // Retrieve and verify input parameter and body
+      let listName = req.params.listName;
+      const schema = { listName: Joi.string().required(), description: Joi.string().required().max(3000) } ;
+      const result = Joi.validate({ listName: req.params.listName, description: req.body.description }, schema);
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql1 = `UPDATE music.playlists SET description = '${req.body.description}' WHERE (listName = '${req.params.listName}') and (owner = '${decoded.username}');`;
+        con.query(sql1, function (err, result) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.send({ message: 'Success' });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure:
+  // { message: string }
+});
+
 // Save a list of track IDs to a given list name
 // Return an error if the list name does not exist
 // Replace existing track IDs with new values if the list exists

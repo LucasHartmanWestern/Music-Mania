@@ -18,6 +18,13 @@ export class AuthenticationService {
   constructor(private http: HttpClient, private spinner: NgxSpinnerService) {
   }
 
+  continueAsGuest(): Observable<any> {
+    return this.http.get<any>(`${Constants.apiPaths.credentials}/guest`, {headers: this.httpHeaders}).pipe(
+      map((data: Credentials) => data),
+      catchError(this.handleError)
+    );
+  }
+
   login(username: string, password: string, reset?: boolean, newPassword?: string, verify?: boolean): Observable<Credentials> {
     return this.http.post<Credentials>(`${Constants.apiPaths.credentials}`, {
       "username": username,

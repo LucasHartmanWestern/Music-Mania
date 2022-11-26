@@ -62,7 +62,7 @@ app.use( (req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE');
     res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    if(req.path !== '/api/v1/login/credentials') {
+    if(req.path !== '/api/v1/login/credentials' || req.path !== '/api/v1/login/credentials/guest') {
       let token = req.header('Authorization');
       jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
         //console.log(decoded);
@@ -237,8 +237,8 @@ app.put('/api/v1/music/lists/:listName', async (req, res) => {
     let token = req.header('Authorization');
     jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
       if (err) res.status(500);
-      if (decoded.access_level <= 0) {
-        res.stats(400).send("Not authorized")
+      if (decoded.access_level < 0) {
+        res.status(400).send("Not authorized")
         return;
       } else {
         // Retrieve and verify input parameter and body
@@ -274,7 +274,7 @@ app.put('/api/v1/music/lists/visibility/:listName/:visibility', async (req, res)
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
     if (decoded.access_level <= 0) {
-      res.stats(400).send("Not authorized")
+      res.status(400).send("Not authorized")
       return;
     } else {
       // Retrieve and verify input parameter and body
@@ -309,7 +309,7 @@ app.put('/api/v1/music/lists/rename/renameList/rename', async (req, res) => {
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
     if (decoded.access_level <= 0) {
-      res.stats(400).send("Not authorized")
+      res.status(400).send("Not authorized")
       return;
     } else {
       // Retrieve and verify input parameter and body
@@ -344,7 +344,7 @@ app.put('/api/v1/music/lists/description/update/:listName', async (req, res) => 
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
     if (decoded.access_level <= 0) {
-      res.stats(400).send("Not authorized")
+      res.status(400).send("Not authorized")
       return;
     } else {
       // Retrieve and verify input parameter and body
@@ -387,7 +387,7 @@ app.put('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
       if (err) res.status(500);
       if (decoded.access_level <= 0) {
-        res.stats(400).send("Not authorized")
+        res.status(400).send("Not authorized")
         return;
       } else {
         // Retrieve and verify input parameter and body
@@ -445,8 +445,8 @@ app.get('/api/v1/music/lists/:listName/tracks', async (req, res) => {
     let token = req.header('Authorization');
     jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
       if (err) res.status(500);
-      if (decoded.access_level <= 0) {
-        res.stats(400).send("Not authorized")
+      if (decoded.access_level < 0) {
+        res.status(400).send("Not authorized")
         return;
       } else {
         // Retrieve and verify input parameter
@@ -509,7 +509,7 @@ app.delete('/api/v1/music/lists/:listName', async (req, res) => {
     jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
       if (err) res.status(500);
       if (decoded.access_level <= 0) {
-        res.stats(400).send("Not authorized")
+        res.status(400).send("Not authorized")
         return;
       } else {
         // Retrieve and verify input parameter
@@ -551,8 +551,8 @@ app.get('/api/v1/music/lists', async (req, res) => {
     let token = req.header('Authorization');
     jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
       if (err) res.status(500);
-      if (decoded.access_level <= 0) {
-        res.stats(400).send("Not authorized")
+      if (decoded.access_level < 0) {
+        res.status(400).send("Not authorized")
         return;
       } else {
         // Get saved list info
@@ -693,6 +693,24 @@ app.put('/api/v1/login/credentials', async (req, res) => {
 
   // Sent Object Structure:
   // access_level: int
+});
+
+// Login as guest
+app.get('/api/v1/login/credentials/guest', async (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  const token = jwt.sign({
+    exp: Math.floor(Date.now() / 1000) + (5 * 60 * 60), // 5 hour expiry
+    username: 'guest',
+    access_level: 0
+  }, process.env.JWT_KEY || 'se3316');
+
+  res.send({jwt: token});
+
+  // Sent Object Structure:
+  // token: string
 });
 
 // Resend email verification

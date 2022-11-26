@@ -12,7 +12,13 @@
 
   .references {
     position: absolute;
-    bottom: 5px;
+    bottom: 45px;
     left: calc(50% - 70px);
+  }
+
+  .policy {
+    position: absolute;
+    bottom: 10px;
+    left: calc(50% );
   }
 }

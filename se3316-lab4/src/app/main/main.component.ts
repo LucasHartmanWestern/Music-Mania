@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {Credentials} from "../core/constants/common.enum";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { PolicyComponent } from '../modals/policy/policy.component';
 
 @Component({
   selector: 'app-main',
@@ -12,10 +14,12 @@ export class MainComponent implements OnInit {
     jwt: localStorage.getItem('token')
   };
 
-  constructor() { }
+  constructor(private modalService: NgbModal) { }
 
   ngOnInit(): void {
     console.log(this.credentials);
   }
-
+  openPolicy(): void{
+    const modalRef = this.modalService.open(PolicyComponent, {centered: true, windowClass: 'PolicyModalClass'})
+  }
 }

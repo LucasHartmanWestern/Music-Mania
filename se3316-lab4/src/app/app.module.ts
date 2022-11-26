@@ -21,6 +21,7 @@ import { PasswordResetComponent } from './login/password-reset/password-reset.co
 import { MainComponent } from './main/main.component';
 import { AccountVerifyComponent } from './login/account-verify/account-verify.component';
 import { ConfirmComponent } from './modals/confirm/confirm.component';
+import { PolicyComponent } from './modals/policy/policy.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { ConfirmComponent } from './modals/confirm/confirm.component';
     PasswordResetComponent,
     MainComponent,
     AccountVerifyComponent,
-    ConfirmComponent
+    ConfirmComponent,
+    PolicyComponent
   ],
   imports: [
     BrowserModule,

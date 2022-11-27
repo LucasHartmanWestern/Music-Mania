@@ -70,7 +70,14 @@ export class PlaylistComponent implements OnInit {
   createList(listName: string): void {
     this.spinner.show();
     this.musicService.createList(listName).subscribe(res => {
-      this.lists.push({listName: listName, trackCount: 0, tracks: [], totalPlayTime: '00:00:00'});
+      this.lists.push({
+        listName: listName,
+        owner: this.helper.decodeToken(localStorage.getItem('token') || undefined)?.username,
+        lastModified: this.getDate(new Date()),
+        trackCount: 0,
+        tracks: [],
+        totalPlayTime: '00:00:00'
+      });
       this.musicService.lists$.next({lists: this.lists});
       this.spinner.hide();
     }, error => console.log(error));
@@ -84,6 +91,18 @@ export class PlaylistComponent implements OnInit {
     const modalRef = this.modalService.open(UsersComponent, {centered: true, windowClass: 'UsersModalClass'});
   }
 
+  getDate(date: any): string {
+    return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getMinutes().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    }), date.getSeconds().toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    })].join(':')}`
+  }
 
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});

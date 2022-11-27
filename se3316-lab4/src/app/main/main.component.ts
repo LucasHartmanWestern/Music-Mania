@@ -19,7 +19,8 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     console.log(this.credentials);
   }
-  openPolicy(): void{
-    const modalRef = this.modalService.open(PolicyComponent, {centered: true, windowClass: 'PolicyModalClass'})
+  openPolicy(type: string): void{
+    const modalRef = this.modalService.open(PolicyComponent, {centered: true, windowClass: 'PolicyModalClass',})
+    modalRef.componentInstance.type = type;
   }
 }

@@ -6,11 +6,15 @@ import { Component, OnInit, ViewEncapsulation, ElementRef, Input, OnDestroy } fr
   styleUrls: ['./policy.component.scss']
 })
 export class PolicyComponent implements OnInit {
-
-
-  constructor() { }
+  @Input() type: string = '';
+  
+  constructor() { 
+    
+  }
 
   ngOnInit(): void {
+
+    
   }
-  
+
 }

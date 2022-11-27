@@ -1,4 +1,4 @@
-<div class = "privacy">
+<div id = "privacy" *ngIf="type==='privacy'">
     <h1>Security and Privacy Policy:</h1>
     <h2>1.    Information we collect</h2>
     <h3>a.    User email addresses are the only form of personal information collected.</h3>
@@ -14,4 +14,11 @@
     <h2>5.    In the event of a takeover or dissolution</h2>
     <h3>a.    You will be notified of such an occurrence via your provided email.</h3>
     <h3>b.    You may choose to have your information deleted as a result of this event.</h3>
+</div>
+
+<div id = "use" *ngIf="type==='use'">
+    <h1>Acceptable Use Policy</h1>
+</div>
+<div id = "dmca" *ngIf="type==='dmca'">
+    <h1>DMCA Notice & Takedown Policy</h1>
 </div>

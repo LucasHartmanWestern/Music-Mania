@@ -173,6 +173,7 @@ export class TrackDisplayComponent implements OnInit {
   }
 
   saveDescription(newDescription: string): void {
+    if (!newDescription) return;
     this.musicService.updateDescription(this.selectedList.listName, newDescription).subscribe(res => {
       this.selectedList.description = newDescription;
     });

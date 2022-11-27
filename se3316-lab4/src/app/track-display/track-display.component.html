@@ -36,7 +36,7 @@
 
       <div class="descriptionArea">
         <button *ngIf="selectedList.owner === username" (click)="editDescription ? saveDescription(description.value): '';editDescription = !editDescription">{{editDescription ? 'Save Changes' : 'Edit Description'}}</button>
-        <span [hidden]="selectedList?.description && editDescription !== false">{{selectedList?.description}}</span>
+        <span *ngIf="selectedList?.description && editDescription === false">{{selectedList?.description}}</span>
         <textarea [hidden]="!editDescription" [value]="selectedList?.description || ''" [placeholder]="'New description...'" #description></textarea>
       </div>
 

@@ -22,6 +22,7 @@ import { MainComponent } from './main/main.component';
 import { AccountVerifyComponent } from './login/account-verify/account-verify.component';
 import { ConfirmComponent } from './modals/confirm/confirm.component';
 import { PolicyComponent } from './modals/policy/policy.component';
+import { RecorderToolComponent } from './modals/recorder-tool/recorder-tool.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { PolicyComponent } from './modals/policy/policy.component';
     MainComponent,
     AccountVerifyComponent,
     ConfirmComponent,
-    PolicyComponent
+    PolicyComponent,
+    RecorderToolComponent
   ],
   imports: [
     BrowserModule,

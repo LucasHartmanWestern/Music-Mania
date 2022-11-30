@@ -18,17 +18,20 @@ export class RecorderToolComponent implements OnInit {
   ngOnInit(): void {
     this.display();
   }
-  state(): void
+
+  state(event?: any, recordType?:string, date?: any, contentType?: string, contentName?:string, username?:string, ownerName?:string, ownerEmail?:string): void
   {
+    event.preventDefault();
     this.btnState = !this.btnState;
 
     if (this.btnState == false)
     {
-      this.musicService.createDmca().subscribe(req => {
+      this.musicService.createDmca(recordType, date, contentType, contentName, username, ownerName, ownerEmail).subscribe(req => {
         this.records = req;
       })
     }
   }
+
   display(): void {
     this.musicService.getDmca().subscribe(res => {
       this.records = res;

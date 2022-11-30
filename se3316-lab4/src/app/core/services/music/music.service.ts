@@ -63,8 +63,17 @@ export class MusicService {
     );
   }
 
-  createDmca(recordType?: string, recievedDate?: Date, contentType?: string, contentName?: string, username?: string, ownerName?: string, ownerEmail?: string, id?: number ): Observable<Dmca[]> {
-    return this.http.put<Dmca[]>(`${Constants.apiPaths.dmca}?limit=${this.trackSearchLim}${recordType ? '&record_type=' + recordType : ''}${recievedDate ? '&recieved_date=' + recievedDate : ''}${contentType ? '&content_type=' + contentType : ''}${contentName ? '&content_name=' + contentName : ''}${username ? '&username=' + username : ''}${ownerName ? '&owner_name=' + ownerName : ''}${ownerEmail ? '&owner_email=' + ownerEmail : ''},${id ? '&id=' + id : ''}`, {headers: this.httpHeaders}).pipe(
+  createDmca(recordType?: string, receivedDate?: Date, contentType?: string, contentName?: string, username?: string, ownerName?: string, ownerEmail?: string, id?: number ): Observable<Dmca[]> {
+    return this.http.put<Dmca[]>(`${Constants.apiPaths.dmca}`, {
+      record_type: recordType,
+      received_date: receivedDate,
+      content_type: contentType,
+      content_name: contentName,
+      username: username,
+      owner_name: ownerName,
+      owner_email: ownerEmail,
+      id: id
+    }, {headers: this.httpHeaders}).pipe(
       map((data: Dmca[]) => data),
       catchError(this.handleError)
     );

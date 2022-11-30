@@ -1,16 +1,17 @@
 <h1>Log DMCA related issues</h1>
 <div class = "type">
-    <h2> Select Type:</h2>
-    <select name="type" id="type">
-        <option value ="request"> Takedown Request</option>
-        <option value ="notice"> Infrigement Notice</option>
-        <option value ="claim"> Dispute Claim</option>
+    <label for="type2"> Select Type:</label>
+    <select name="type2" id="type2" #requestType>
+        <option value ="Takedown Request"> Takedown Request</option>
+        <option value ="Infrigement Notice"> Infrigement Notice</option>
+        <option value ="Dispute Claim"> Dispute Claim</option>
     </select>
-    <button  (click)="state()">{{btnState? 'Save Changes' : 'Add Record'}}</button>
+    <button  (click)="state($event)">{{btnState? 'Save Changes' : 'Add Record'}}</button>
 </div>
 
 <div class ="records" *ngIf="btnState === false">
     This will display current records for selected type
+    <table>
     <tr *ngFor="let row of records" >
         <td>{{row?.record_type}}</td>
         <td>{{row?.recieved_date}}</td>
@@ -20,30 +21,32 @@
         <td>{{row?.owner_name}}</td>
         <td>{{row?.owner_email}}</td>
       </tr>
+    </table>
 </div>
 
 <div class = "adder" *ngIf="btnState === true">
-        <form>
+        <form (submit)="state($event, requestType.value, date.value, contentType.value, contentName.value, username.value, ownerName.value, ownerEmail.value)">
             <label for="received">Received Date: </label>
-            <input type="date" id="received" name="received">
+            <input type="date" id="received" name="received" #date>
 
             <label for="contentType">Content Type: </label>
-            <select name="contentType" id="contentType">
+            <select name="contentType" id="contentType" #contentType>
                 <option value ="song">Song</option>
                 <option value ="playlist"> Playlist</option>
             </select>
 
             <label for="reviewName">Song/Playlist Name: </label>
-            <input type="text" id="reviewName" name="reviewName">
+            <input type="text" id="reviewName" name="reviewName" #contentName>
 
             <label for="userName">Username of Violating User: </label>
-            <input type="text" id="userName" name="userName">
+            <input type="text" id="userName" name="userName" #username>
 
             <label for="ownerName">CopyRight Owner Name: </label>
-            <input type="text" id="ownerName" name="ownerName">
+            <input type="text" id="ownerName" name="ownerName" #ownerName>
 
             <label for="ownerEmail">CopyRight Owner Email: </label>
-            <input type="text" id="ownerEmail" name="ownerEmail">
+            <input type="text" id="ownerEmail" name="ownerEmail" #ownerEmail>
+            <input type="submit" [value]="btnState? 'Save Changes' : 'Add Record'">
 
         </form>
      

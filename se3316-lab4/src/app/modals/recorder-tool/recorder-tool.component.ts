@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { MusicService } from "../../core/services/music/music.service";
+import { Dmca } from "../../core/constants/common.enum";
 
 @Component({
   selector: 'app-recorder-tool',
@@ -7,9 +9,33 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RecorderToolComponent implements OnInit {
 
-  constructor() { }
+  btnState: boolean = false;
+  records: Dmca[] = [];
+  newRecord: Dmca[] = [];
+
+  constructor(private musicService: MusicService) { }
 
   ngOnInit(): void {
+    this.display();
   }
+  state(): void
+  {
+    this.btnState = !this.btnState;
 
+    if (this.btnState == false)
+    {
+      this.musicService.createDmca().subscribe(req => {
+        this.records = req;
+      })
+    }
+  }
+  display(): void {
+    this.musicService.getDmca().subscribe(res => {
+      this.records = res;
+      console.log(res);
+    });
+  }
+  add():void {
+
+  }
 }

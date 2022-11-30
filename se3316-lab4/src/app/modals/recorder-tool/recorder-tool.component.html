@@ -1,1 +1,50 @@
-<p>recorder-tool works!</p>
+<h1>Log DMCA related issues</h1>
+<div class = "type">
+    <h2> Select Type:</h2>
+    <select name="type" id="type">
+        <option value ="request"> Takedown Request</option>
+        <option value ="notice"> Infrigement Notice</option>
+        <option value ="claim"> Dispute Claim</option>
+    </select>
+    <button  (click)="state()">{{btnState? 'Save Changes' : 'Add Record'}}</button>
+</div>
+
+<div class ="records" *ngIf="btnState === false">
+    This will display current records for selected type
+    <tr *ngFor="let row of records" >
+        <td>{{row?.record_type}}</td>
+        <td>{{row?.recieved_date}}</td>
+        <td>{{row?.content_type}}</td>
+        <td>{{row?.content_name}}</td>
+        <td>{{row?.username}}</td>
+        <td>{{row?.owner_name}}</td>
+        <td>{{row?.owner_email}}</td>
+      </tr>
+</div>
+
+<div class = "adder" *ngIf="btnState === true">
+        <form>
+            <label for="received">Received Date: </label>
+            <input type="date" id="received" name="received">
+
+            <label for="contentType">Content Type: </label>
+            <select name="contentType" id="contentType">
+                <option value ="song">Song</option>
+                <option value ="playlist"> Playlist</option>
+            </select>
+
+            <label for="reviewName">Song/Playlist Name: </label>
+            <input type="text" id="reviewName" name="reviewName">
+
+            <label for="userName">Username of Violating User: </label>
+            <input type="text" id="userName" name="userName">
+
+            <label for="ownerName">CopyRight Owner Name: </label>
+            <input type="text" id="ownerName" name="ownerName">
+
+            <label for="ownerEmail">CopyRight Owner Email: </label>
+            <input type="text" id="ownerEmail" name="ownerEmail">
+
+        </form>
+     
+</div>

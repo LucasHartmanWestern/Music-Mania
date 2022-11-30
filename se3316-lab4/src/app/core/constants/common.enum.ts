@@ -1,3 +1,14 @@
+export interface Dmca {
+ record_type: string,
+ recieved_date: Date,
+ content_type: string,
+ content_name: string,
+ username: string,
+ owner_name: string,
+ owner_email: string
+ id: number;
+}
+
 export interface Genre {
   genre_id: number,
   parent: number,

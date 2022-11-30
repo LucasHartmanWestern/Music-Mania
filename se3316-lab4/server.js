@@ -137,7 +137,7 @@ app.get('/api/v1/music/tracks', (req, res) => {
       "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+ 
       "LIMIT ?;"
       con.query(sql,[trackTitle,trackTitle,albumTitle,albumTitle,genreTitle,artistName,artistName,lim], function (err, result) {
-        if (err) {res.send(err);};
+        if (err) {res.send(err)};
         res.send(result);
       });
     }
@@ -177,8 +177,8 @@ app.get('/api/v1/music/artists', (req, res) => {
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
       const lim = parseInt(limit);
-      var sql = "SELECT * FROM music.artists WHERE LOCATE(?, artist_name) LIMIT ?;";
-      con.query(sql,[name,lim], function (err, result) {
+      var sql = "SELECT * FROM artists WHERE (soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name)) LIMIT ?;";
+      con.query(sql,[name,name,lim], function (err, result) {
         if (err) {
           res.send (err);
         } else {

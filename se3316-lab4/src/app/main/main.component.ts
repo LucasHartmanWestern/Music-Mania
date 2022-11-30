@@ -11,6 +11,8 @@ import { RecorderToolComponent } from '../modals/recorder-tool/recorder-tool.com
 })
 export class MainComponent implements OnInit {
 
+  admin: boolean = true;
+
   credentials: Credentials = {
     jwt: localStorage.getItem('token')
   };

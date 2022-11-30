@@ -142,9 +142,15 @@ app.get('/api/v1/music/tracks', (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-      var sql = "SELECT * FROM music.tracks WHERE LOCATE(?, track_title) OR LOCATE(?, album_title) OR LOCATE(?, track_genres) OR LOCATE(?, artist_name) LIMIT ?;";
-      con.query(sql,[trackTitle,albumTitle,genreTitle,artistName,lim], function (err, result) {
-        if (err) throw err;
+      var sql = "SELECT * FROM music.tracks "+ 
+      "WHERE"+ 
+      "(soundex(track_title) like soundex(?) OR LOCATE(?, track_title)) OR "+ 
+      "(soundex(album_title) like soundex(?) OR LOCATE(?, album_title)) OR "+ 
+      "LOCATE(?, track_genres) OR "+ 
+      "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+ 
+      "LIMIT ?;"
+      con.query(sql,[trackTitle,trackTitle,albumTitle,albumTitle,genreTitle,artistName,artistName,lim], function (err, result) {
+        if (err) {res.send(err);};
         res.send(result);
       });
     }

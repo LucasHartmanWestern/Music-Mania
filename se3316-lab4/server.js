@@ -6,6 +6,7 @@ const express = require('express');
 const storage = require('node-persist');
 const jwt = require('jsonwebtoken');
 const nodemailer = require("nodemailer");
+const { join } = require('path');
 
 const app = express(); // Call express function to get Express type object
 app.use (express.json()); // Add middleware to enable json parsing
@@ -105,10 +106,9 @@ app.get('/api/v1/music/genres', (req, res) => {
     // ]
 });
 
-app.put('/api/v1/music/dmca/:id', async (req, res) => {
-
-
+app.put('/api/v1/music/dmca', async (req, res) => {
   let token = req.header('Authorization');
+  
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
     if (decoded.access_level < 0) {
@@ -116,16 +116,16 @@ app.put('/api/v1/music/dmca/:id', async (req, res) => {
       return;
     } else {
       // Retrieve and verify input parameter and body
-      let id= req.params.id;
-      const schema = Joi.string().required().max(25);
-      const result = Joi.validate(id, schema);
+      let body = req.body;
+      const schema = { record_type: Joi.string().required(), received_date: Joi.date().required(), content_type: Joi.string().required(), content_name: Joi.string().required(), username: Joi.string().required(), owner_name: Joi.string().required(), owner_email: Joi.string().required()  };
+      const result = Joi.validate(body, schema);
       if (result.error) res.status(400).send(result.error.details[0].message);
       else {
-        var sql = "INSERT INTO music.dmca (record_type, recieved_date, content_type, content_name, username, owner_name, id) VALUES ?";
-        var values = [[recordType, receivedDate,contentType,contentName,username, ownerName, ownerEmail, id]];
+        var sql = "INSERT INTO music.dmca (record_type, received_date, content_type, content_name, username, owner_name, owner_email) VALUES ?";
+        var values = [[body.record_type, body.received_date, body.content_type,body.content_name,body.username, body.owner_name,body.owner_email]];
         con.query(sql,[values], function (err, result) {
           if (err) {
-            res.status(400).send("Record already exists!");
+            res.status(400).send(err);
           } else {
             res.send({"dmca": []});
           }

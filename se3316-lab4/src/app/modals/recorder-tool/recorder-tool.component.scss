@@ -7,15 +7,14 @@ tr{
 
 table{
     width: 100%;
+    border: 1px solid;
 }
 
 td{
-    width: 100px
+    width: 100px;
+    border: 1px solid;
 }
 
 div{
     min-width: 500px
-}
-.modal-lg {
-    max-width: 100% !important;
 }

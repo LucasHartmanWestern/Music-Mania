@@ -21,13 +21,11 @@ export class PolicyComponent implements OnInit {
 
   ngOnInit(): void {
 
+        
+      }
     
-  }
-  /*
-  savePolicy(newPolicy: string): void {
-    this.musicService.updateDescription(this.selectedList.listName, newDescription).subscribe(res => {
-      this.selectedList.description = newDescription;
-    });
-  }*/
-
+      save()
+      {
+        
+      }
 }

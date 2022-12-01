@@ -1,5 +1,5 @@
 <div id = "privacy" *ngIf="type==='privacy'">
-    <span [contentEditable]="admin">
+    <span [contentEditable]="admin"  (input)="save()">
     <h1>Security and Privacy Policy:</h1>
     <h2>By using this site you agree to our policies.</h2>
     <h2>1.    Information We Collect</h2>

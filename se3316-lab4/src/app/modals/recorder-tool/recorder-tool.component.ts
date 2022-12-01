@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { MusicService } from "../../core/services/music/music.service";
 import { Dmca } from "../../core/constants/common.enum";
 
+import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
+
 @Component({
   selector: 'app-recorder-tool',
   templateUrl: './recorder-tool.component.html',
@@ -13,7 +15,7 @@ export class RecorderToolComponent implements OnInit {
   records: Dmca[] = [];
   newRecord: Dmca[] = [];
 
-  constructor(private musicService: MusicService) { }
+  constructor(public activeModal: NgbActiveModal,private musicService: MusicService) { }
 
   ngOnInit(): void {
     this.display();
@@ -29,6 +31,7 @@ export class RecorderToolComponent implements OnInit {
       this.musicService.createDmca(recordType, date, contentType, contentName, username, ownerName, ownerEmail).subscribe(req => {
         this.records = req;
       })
+      this.activeModal.close();
     }
   }
 
@@ -37,8 +40,5 @@ export class RecorderToolComponent implements OnInit {
       this.records = res;
       console.log(res);
     });
-  }
-  add():void {
-
   }
 }

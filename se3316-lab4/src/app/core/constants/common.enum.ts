@@ -1,6 +1,6 @@
 export interface Dmca {
  record_type: string,
- recieved_date: Date,
+ received_date: Date,
  content_type: string,
  content_name: string,
  username: string,

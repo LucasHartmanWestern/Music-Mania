@@ -1,20 +1,22 @@
 <h1>Log DMCA related issues</h1>
 <div class = "type">
-    <label for="type2"> Select Type:</label>
-    <select name="type2" id="type2" #requestType>
-        <option value ="Takedown Request"> Takedown Request</option>
-        <option value ="Infrigement Notice"> Infrigement Notice</option>
-        <option value ="Dispute Claim"> Dispute Claim</option>
-    </select>
-    <button  (click)="state($event)">{{btnState? 'Save Changes' : 'Add Record'}}</button>
+    
+
+    <button  (click)="state($event)" [hidden]="btnState" >{{btnState? 'Save Changes' : 'Add Record'}}</button>
 </div>
 
 <div class ="records" *ngIf="btnState === false">
-    This will display current records for selected type
     <table>
+        <td>DMCA</td>
+        <td>Date received</td>
+        <td>Type</td>
+        <td>Content Name</td>
+        <td>Username</td>
+        <td>Owner Name</td>
+        <td>Owner Email</td>
     <tr *ngFor="let row of records" >
         <td>{{row?.record_type}}</td>
-        <td>{{row?.recieved_date}}</td>
+        <td>{{row?.received_date}}</td>
         <td>{{row?.content_type}}</td>
         <td>{{row?.content_name}}</td>
         <td>{{row?.username}}</td>
@@ -26,6 +28,12 @@
 
 <div class = "adder" *ngIf="btnState === true">
         <form (submit)="state($event, requestType.value, date.value, contentType.value, contentName.value, username.value, ownerName.value, ownerEmail.value)">
+            <label for="type2"> Select Type:</label>
+            <select name="type2" id="type2" #requestType>
+                <option value ="Takedown Request"> Takedown Request</option>
+                <option value ="Infrigement Notice"> Infrigement Notice</option>
+                <option value ="Dispute Claim"> Dispute Claim</option>
+            </select>
             <label for="received">Received Date: </label>
             <input type="date" id="received" name="received" #date>
 

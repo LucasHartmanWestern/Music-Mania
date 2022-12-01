@@ -1,5 +1,5 @@
 <div id = "privacy" *ngIf="type==='privacy'">
-    <span [contentEditable]="admin"  (input)="save()">
+    <span [contentEditable]="admin"  >
     <h1>Security and Privacy Policy:</h1>
     <h2>By using this site you agree to our policies.</h2>
     <h2>1.    Information We Collect</h2>
@@ -32,8 +32,10 @@
     </span>
 </div>
 
-<div id = "dmca" *ngIf="type==='dmca'">
-    <span [contentEditable]="admin">
+
+<!--  -->
+<div id = "dmca" *ngIf="type==='dmca'" >
+    <span [contentEditable]="admin" (input)="change($event.target.innerHTML)">
     <h1>DMCA Notice & Takedown Policy</h1>
     <h4>In accordance with the Digital Millennium Copyright Act, we will expeditiously respond to any claims of copyright infringement committed using our service if claims are sent to the following address: epigou@uwo.ca</h4>
     <h2>Your DMCA notice must include the following information:</h2>

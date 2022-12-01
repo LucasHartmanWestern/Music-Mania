@@ -10,6 +10,8 @@ import { JwtHelperService } from "@auth0/angular-jwt";
 export class PolicyComponent implements OnInit {
 
   @Input() type: string = '';
+  @Input() content: string = '';
+
   admin: boolean = true;
   helper = new JwtHelperService();
   editPolicy: boolean = false;
@@ -24,8 +26,7 @@ export class PolicyComponent implements OnInit {
         
       }
     
-      save()
-      {
-        
+      change(content: string){
+        this.content = content;
       }
 }

@@ -15,7 +15,7 @@ export class RecorderToolComponent implements OnInit {
   records: Dmca[] = [];
   newRecord: Dmca[] = [];
 
-  constructor(public activeModal: NgbActiveModal,private musicService: MusicService) { }
+  constructor(public activeModal: NgbActiveModal,private musicService: MusicService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.display();
@@ -32,6 +32,7 @@ export class RecorderToolComponent implements OnInit {
         this.records = req;
       })
       this.activeModal.close();
+      const modalRef = this.modalService.open(RecorderToolComponent, {centered: true, windowClass: 'Recorder-ToolModalClass',})
     }
   }
 
@@ -41,4 +42,6 @@ export class RecorderToolComponent implements OnInit {
       console.log(res);
     });
   }
+
+
 }

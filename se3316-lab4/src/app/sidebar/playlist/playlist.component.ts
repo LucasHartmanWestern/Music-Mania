@@ -80,7 +80,10 @@ export class PlaylistComponent implements OnInit {
       });
       this.musicService.lists$.next({lists: this.lists});
       this.spinner.hide();
-    }, error => console.log(error));
+    }, error => {
+      this.spinner.hide();
+      alert(error);
+    });
   }
 
   getListInfo(list: Playlist): string {

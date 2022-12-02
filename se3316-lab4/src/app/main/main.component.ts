@@ -13,7 +13,7 @@ import { JwtHelperService } from "@auth0/angular-jwt";
 export class MainComponent implements OnInit {
 
   helper = new JwtHelperService();
-  admin: boolean = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level >= 3;
+  admin: boolean = this.helper.decodeToken(localStorage.getItem('token') || undefined)?.access_level >= 3;
 
   credentials: Credentials = {
     jwt: localStorage.getItem('token')

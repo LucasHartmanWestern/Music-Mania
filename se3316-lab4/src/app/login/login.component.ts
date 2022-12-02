@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  // Login a user
   authenticate(username: string, password: string): void {
 
     if (!username || !password) this.error = "Please enter both a username and password";
@@ -45,6 +46,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  // Create new account
   createAccount(username: string, email: string, password: string, confirm: string): void {
     if (password !== confirm) this.error = "Your password does not match your confirmation";
     else if (!username || !password) this.error = "Please enter both a username and password";
@@ -68,6 +70,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  // Resend verification or forgot password email
   resendEmail(event: any, email: string): void {
     event.preventDefault();
     this.loginIssue = false;

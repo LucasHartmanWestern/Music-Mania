@@ -17,6 +17,7 @@ const port = process.env.PORT || 3000; // Specify port or use 3000 by default
     await storage.init({dir: 'storage/music/'})
 })();
 
+// Create SQL connectino
 var con = mysql.createConnection({
     host: "localhost",
     user: "user",
@@ -25,6 +26,7 @@ var con = mysql.createConnection({
     multipleStatements : true
 });
 
+// Create emailer
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -33,6 +35,7 @@ var transporter = nodemailer.createTransport({
   }
 });
 
+// Define function to get date given a date object
 let getDate = (date) =>  {
   return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
     minimumIntegerDigits: 2,
@@ -46,6 +49,7 @@ let getDate = (date) =>  {
   })].join(':')}`
 }
 
+// Connect to db
 con.connect(function(err) {
     if (err) throw err;
     console.log("Connected to DB");
@@ -101,6 +105,7 @@ app.get('/api/v1/music/dmca', (req, res) => {
   // ]
 })
 
+// Create new DMCA request
 app.put('/api/v1/music/dmca', async (req, res) => {
 
   // Received Object Structure:
@@ -831,7 +836,7 @@ app.put('/api/v1/login/credentials', async (req, res) => {
             subject: 'Verify Email Address for Music App',
             text: `
             Verify your email address using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}/login/verify/${token}
             `
           };
 
@@ -896,7 +901,7 @@ app.post('/api/v1/login/credentials/resend', async (req, res) => {
           subject: 'Verify Email Address for Music App',
           text: `
             Verify your email address using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}/login/verify/${token}
             `
         };
 
@@ -943,8 +948,8 @@ app.post('/api/v1/login/credentials/reset', async (req, res) => {
           subject: 'Reset Password for Music App',
           text: `
             Reset your password using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/reset/${token}
-            `
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}:4200/login/reset/${token}
+        `
         };
 
         transporter.sendMail(mailOptions, (err, info) => {});
@@ -991,6 +996,7 @@ app.get('/api/v1/login/credentials/all', async (req, res) => {
 
 });
 
+// Update users credentials
 app.post('/api/v1/login/credentials/update', async (req, res) => {
   let token = req.header('Authorization');
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {

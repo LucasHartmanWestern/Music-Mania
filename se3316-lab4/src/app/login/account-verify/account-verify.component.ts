@@ -21,6 +21,7 @@ export class AccountVerifyComponent implements OnInit {
     this.token = this.route.snapshot.paramMap.get('token');
   }
 
+  // Validate user account
   validateAccount(event: any): void {
     event.preventDefault();
     let jwt = this.helper.decodeToken(this.token || undefined);

@@ -18,6 +18,7 @@ export class AuthenticationService {
   constructor(private http: HttpClient, private spinner: NgxSpinnerService) {
   }
 
+  // Get guest jwt
   continueAsGuest(): Observable<any> {
     return this.http.get<any>(`${Constants.apiPaths.credentials}/guest`, {headers: this.httpHeaders}).pipe(
       map((data: Credentials) => data),
@@ -25,6 +26,7 @@ export class AuthenticationService {
     );
   }
 
+  // Authenticate user
   login(username: string, password: string, reset?: boolean, newPassword?: string, verify?: boolean): Observable<Credentials> {
     return this.http.post<Credentials>(`${Constants.apiPaths.credentials}`, {
       "username": username,
@@ -38,6 +40,7 @@ export class AuthenticationService {
     );
   }
 
+  // Create new account
   createAccount(username: string, email: string, password: string): Observable<Credentials> {
     return this.http.put<Credentials>(`${Constants.apiPaths.credentials}`, {
       "username": username,
@@ -49,6 +52,7 @@ export class AuthenticationService {
     );
   }
 
+  // Get list of users
   getUsers(): Observable<Credentials[]> {
     return this.http.get<Credentials[]>(`${Constants.apiPaths.credentials}/all`,{headers: this.httpHeaders}).pipe(
       map((data: Credentials[]) => data),
@@ -56,6 +60,7 @@ export class AuthenticationService {
     );
   }
 
+  // Update user details
   updateUser(user: Credentials, newValue: string, att: string): Observable<any> {
     return this.http.post<any>(`${Constants.apiPaths.credentials}/update`,{user: user, newValue: newValue, att: att},{headers: this.httpHeaders}).pipe(
       map((data: any) => data),
@@ -63,6 +68,7 @@ export class AuthenticationService {
     );
   }
 
+  // Reset password of existing user
   resetPassword(email: string): Observable<any> {
     return this.http.post<any>(`${Constants.apiPaths.credentials}/reset`, {
       "email": email
@@ -72,6 +78,7 @@ export class AuthenticationService {
     );
   }
 
+  // Resent validation email
   resendValidation(email: string): Observable<any> {
     return this.http.post<any>(`${Constants.apiPaths.credentials}/resend`, {
       "email": email
@@ -81,6 +88,7 @@ export class AuthenticationService {
     );
   }
 
+  // Handle errors
   private handleError(err: HttpErrorResponse) {
 
 

@@ -21,6 +21,7 @@ export class PlaylistSelectorComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  // Return only the users playlist
   getLists(): Playlist[] {
    return this.lists.filter((list: Playlist) => list.owner === this.username);
   }
@@ -32,6 +33,7 @@ export class PlaylistSelectorComponent implements OnInit {
     this.close();
   }
 
+  // Close the modal
   close() {
     this.activeModal.close();
   }

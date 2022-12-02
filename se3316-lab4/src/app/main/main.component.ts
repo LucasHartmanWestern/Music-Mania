@@ -22,12 +22,15 @@ export class MainComponent implements OnInit {
   constructor(private modalService: NgbModal) { }
 
   ngOnInit(): void {
-    console.log(this.credentials);
   }
+
+  // Open policy modal
   openPolicy(type: string): void{
     const modalRef = this.modalService.open(PolicyComponent, {centered: true, windowClass: 'PolicyModalClass',})
     modalRef.componentInstance.type = type;
   }
+
+  // Open tools modal
   openTools(): void{
     const modalRef = this.modalService.open(RecorderToolComponent, {centered: true, windowClass: 'RecorderToolModalClass',})
   }

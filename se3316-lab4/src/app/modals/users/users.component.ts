@@ -16,6 +16,7 @@ export class UsersComponent implements OnInit {
 
   constructor(private authenticationService: AuthenticationService, public activeModal: NgbActiveModal, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
+  // Get users data
   ngOnInit(): void {
     this.spinner.show();
     this.authenticationService.getUsers().subscribe(res => {
@@ -24,6 +25,7 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Track new changes
   changeMade(user: Credentials, newValue: string, att: string): void {
     let currentChange = this.changeList.findIndex(change => {
       return (change.user == user && change.att == att);
@@ -40,6 +42,7 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Save all tracked changes
   saveChanges(): void {
     this.changeList.forEach(change => {
       this.authenticationService.updateUser(change.user, change.newValue, change.att).subscribe(res => {
@@ -49,6 +52,7 @@ export class UsersComponent implements OnInit {
     this.close();
   }
 
+  // Close the modal
   close(): void {
     this.activeModal.close();
   }

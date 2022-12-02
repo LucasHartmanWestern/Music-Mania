@@ -21,6 +21,7 @@ export class PasswordResetComponent implements OnInit {
     this.token = this.route.snapshot.paramMap.get('token');
   }
 
+  // Reset password of user
   resetPassword(event: any, password: string, confirm: string): void {
     event.preventDefault();
     let jwt = this.helper.decodeToken(this.token || undefined);

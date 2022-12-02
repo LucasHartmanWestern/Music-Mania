@@ -6,7 +6,7 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ReviewsComponent } from "../modals/reviews/reviews.component";
 import { JwtHelperService } from "@auth0/angular-jwt";
-import {ConfirmComponent} from "../modals/confirm/confirm.component";
+import { ConfirmComponent } from "../modals/confirm/confirm.component";
 
 @Component({
   selector: 'app-track-display',
@@ -29,6 +29,8 @@ export class TrackDisplayComponent implements OnInit {
 
   constructor(private musicService: MusicService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
+
+  // Populate initial data
   ngOnInit(): void {
     this.getGenres();
 
@@ -84,6 +86,7 @@ export class TrackDisplayComponent implements OnInit {
     }, error => console.log(error));
   }
 
+  // Open review modal and pass in review data
   openReview(name: string, list: boolean) {
     const modalRef = this.modalService.open(ReviewsComponent, {centered: true, windowClass: 'ReviewsModalClass'});
     modalRef.componentInstance.name = name;
@@ -131,6 +134,7 @@ export class TrackDisplayComponent implements OnInit {
     this.tracks.splice(this.tracks.findIndex((t: Track) => t === track), 1);
   }
 
+  // Get the updated playtime given a time and the newly added duration
   updateTime(currentTime: string, modifyBy: string, add: boolean): string {
     let oldTime = parseInt(currentTime.split(':')[0]) * 60 + parseInt(currentTime.split(':')[1]) + parseInt(currentTime.split(':')[2]) / 60;
     let modifiedTime = parseInt(modifyBy.split(':')[0]) * 60 + parseInt(modifyBy.split(':')[1]);
@@ -147,6 +151,7 @@ export class TrackDisplayComponent implements OnInit {
     })}:00`;
   }
 
+  // Delete a playlist
   deleteList(list: Playlist): void {
     const modalRef = this.modalService.open(ConfirmComponent, {centered: true, windowClass: 'ConfirmModalClass'});
     modalRef.componentInstance.message = 'Are you sure you want to delete this playlist?';
@@ -160,6 +165,7 @@ export class TrackDisplayComponent implements OnInit {
     });
   }
 
+  // Rename a playlist
   renameList(event: any, newName: string): void {
     if (newName) {
       event.preventDefault();
@@ -172,6 +178,7 @@ export class TrackDisplayComponent implements OnInit {
     }
   }
 
+  // Save a new description for the playlist
   saveDescription(newDescription: string): void {
     if (!newDescription) return;
     this.musicService.updateDescription(this.selectedList.listName, newDescription).subscribe(res => {
@@ -179,6 +186,7 @@ export class TrackDisplayComponent implements OnInit {
     });
   }
 
+  // Toggle public vs private playlist visibility
   updateVisibility(list: Playlist, visibility: string): void {
     list.visibility = visibility;
     this.musicService.playlistVisibility(list.listName, visibility).subscribe(res => {
@@ -188,10 +196,12 @@ export class TrackDisplayComponent implements OnInit {
     });
   }
 
+  // Preview a selected track or artist
   preview(type: string, preview: any): void {
     this.musicService.previewSelection$.next({preview: preview, type: type});
   }
 
+  // Get a formatted date from a date object
   getDate(date: any): string {
     return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
       minimumIntegerDigits: 2,

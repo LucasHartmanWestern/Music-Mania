@@ -24,6 +24,7 @@ export class ReviewsComponent implements OnInit {
 
   constructor(private musicService: MusicService, public activeModal: NgbActiveModal, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
+  // Populate starting data
   ngOnInit(): void {
     this.spinner.show();
 
@@ -36,11 +37,13 @@ export class ReviewsComponent implements OnInit {
     this.accessLvl = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level;
   }
 
+  // Return list of reviews after filtering by visibility
   filteredReviews(showHidden?: boolean): Reviews[] {
     if (showHidden) return this.reviewList.filter(review => review.visibility === 'Hidden');
     else return this.reviewList.filter(review => review.visibility === 'Visible');
   }
 
+  // Return rating of playlist based on filtered review list
   rating(): number {
     let reviewCount: number = 0;
     let reviewSum: number = 0;
@@ -51,6 +54,7 @@ export class ReviewsComponent implements OnInit {
     return reviewSum / reviewCount;
   }
 
+  // Create a new review
   createReview(event: any, review: string, rating: any): void {
     event.preventDefault();
     if (!review.length) return;
@@ -75,6 +79,7 @@ export class ReviewsComponent implements OnInit {
     })
   }
 
+  // Get formatted date
   getDate(date: any): string {
     return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
       minimumIntegerDigits: 2,
@@ -88,6 +93,7 @@ export class ReviewsComponent implements OnInit {
     })].join(':')}`
   }
 
+  // Toggle review visibility
   toggleReview(review: Reviews, visibility: string): void {
     this.spinner.show();
     this.musicService.toggleReview(this.name, this.list ? 'List' : 'Track', review, visibility).subscribe(res => {
@@ -96,6 +102,7 @@ export class ReviewsComponent implements OnInit {
     })
   }
 
+  // Close modal
   close(): void {
     this.activeModal.close();
   }

@@ -25,6 +25,7 @@ export class PolicyComponent implements OnInit {
   constructor(private musicService: MusicService, private spinner: NgxSpinnerService) {
   }
 
+  // Get initial policy data
   ngOnInit(): void {
     this.spinner.show();
     this.musicService.getPolicy(this.type).subscribe(res => {
@@ -36,6 +37,7 @@ export class PolicyComponent implements OnInit {
     }, error => this.spinner.hide());
   }
 
+  // Save new policy
   savePolicy(newPolicy: string): void {
     this.spinner.show();
     this.musicService.updatePolicy(this.type, newPolicy).subscribe(res => {

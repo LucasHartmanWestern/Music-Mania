@@ -22,6 +22,7 @@ export class PlaylistComponent implements OnInit {
 
   constructor(private musicService: MusicService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
+  // Populate initial playlist data
   ngOnInit(): void {
     this.getLists();
 
@@ -52,12 +53,14 @@ export class PlaylistComponent implements OnInit {
     }, error => console.log(error));
   }
 
+  // Return sorted version of playlists
   displayLists(): Playlist[] {
     return this.lists?.sort((a: Playlist, b: Playlist) => {
       return a.lastModified > b.lastModified ? -1 : a.lastModified < b.lastModified ? 1 : 0;
     });
   }
 
+  // Get the details of a list
   readList(list: Playlist): void {
     this.spinner.show();
     this.musicService.getLists(list.listName).subscribe(res => {
@@ -67,6 +70,7 @@ export class PlaylistComponent implements OnInit {
     }, error => console.log(error));
   }
 
+  // Create a new list
   createList(listName: string): void {
     this.spinner.show();
     this.musicService.createList(listName).subscribe(res => {
@@ -86,14 +90,17 @@ export class PlaylistComponent implements OnInit {
     });
   }
 
+  // Return formatted playlist details for display
   getListInfo(list: Playlist): string {
     return `${list.trackCount} tracks - ${list.totalPlayTime} duration`;
   }
 
+  // Open the users adjustment modal
   showUsers(): void {
     const modalRef = this.modalService.open(UsersComponent, {centered: true, windowClass: 'UsersModalClass'});
   }
 
+  // Get formatted date
   getDate(date: any): string {
     return `${[date.getFullYear(), date.getMonth() + 1, date.getDate()].join('-')} ${[date.getHours().toLocaleString('en-US', {
       minimumIntegerDigits: 2,
@@ -107,12 +114,14 @@ export class PlaylistComponent implements OnInit {
     })].join(':')}`
   }
 
+  // Return to genres display
   home(): void {
     this.musicService.previewSelection$.next({preview: null, type: ''});
     this.musicService.searchParams$.next({trackTitle: '', artistTitle: '', albumTitle: ''});
     this.musicService.selectList$.next({list: null});
   }
 
+  // Logout emitter
   logoutOfApp(): void {
     this.logout.emit({jwt: null});
     localStorage.removeItem('token');

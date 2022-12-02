@@ -14,6 +14,7 @@ export class PreviewComponent implements OnInit {
 
   constructor(private musicService: MusicService) { }
 
+  // Populate preview when data is emitted by track-display
   ngOnInit(): void {
     // Run when preview is set
     this.musicService.previewSelection$.subscribe((val: {preview: Track | Artist, type: string}) => {

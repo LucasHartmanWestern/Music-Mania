@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MusicService } from "../../core/services/music/music.service";
 import { Dmca } from "../../core/constants/common.enum";
-
 import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
@@ -19,12 +18,14 @@ export class RecorderToolComponent implements OnInit {
 
   constructor(public activeModal: NgbActiveModal,private musicService: MusicService, private modalService: NgbModal) { }
 
+  // Get initial dmca data
   ngOnInit(): void {
     this.musicService.getDmca().subscribe(res => {
       this.records = res;
     });
   }
 
+  // Add new dmca record depending on state of modal
   state(event?: any, recordType?:string, date?: any, contentType?: string, contentName?:string, username?:string, ownerName?:string, ownerEmail?:string): void {
     event.preventDefault();
 
@@ -42,6 +43,7 @@ export class RecorderToolComponent implements OnInit {
     }
   }
 
+  // Close modal
   close(): void {
     this.activeModal.close();
   }

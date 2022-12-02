@@ -15,6 +15,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  // Logout of the app
   logoutOfApp(): void {
     this.logout.emit({jwt: null});
   }

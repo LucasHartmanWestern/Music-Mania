@@ -16,11 +16,13 @@ export class ConfirmComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  // Pass back confirmation and close modal
   confirm(): void {
     this.confirmed.emit(true);
     this.close();
   }
 
+  // Close modal
   close(): void {
     this.activeModal.close();
   }

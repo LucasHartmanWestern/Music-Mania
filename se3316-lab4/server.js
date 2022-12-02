@@ -831,7 +831,7 @@ app.put('/api/v1/login/credentials', async (req, res) => {
             subject: 'Verify Email Address for Music App',
             text: `
             Verify your email address using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}/login/verify/${token}
             `
           };
 
@@ -896,7 +896,7 @@ app.post('/api/v1/login/credentials/resend', async (req, res) => {
           subject: 'Verify Email Address for Music App',
           text: `
             Verify your email address using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/verify/${token}
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}/login/verify/${token}
             `
         };
 
@@ -943,8 +943,8 @@ app.post('/api/v1/login/credentials/reset', async (req, res) => {
           subject: 'Reset Password for Music App',
           text: `
             Reset your password using this link:
-            ${process.env.BASE_URL || 'http://localhost'}:4200/login/reset/${token}
-            `
+            ${process.env.BASE_URL || req.get('Origin') || 'http://localhost:4200'}:4200/login/reset/${token}
+        `
         };
 
         transporter.sendMail(mailOptions, (err, info) => {});

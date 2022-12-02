@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { Genre, Track, Artist, Playlist, Reviews } from "../../constants/common.enum";
+import { Genre, Track, Artist, Playlist, Reviews, Dmca } from "../../constants/common.enum";
 import { Constants } from "../../constants/constants";
+import { ErrorRequestHandler } from 'express';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,14 @@ export class MusicService {
     );
   }
 
+  getDmca(recordType?: string, recievedDate?: Date, contentType?: string, contentName?: string, username?: string, ownerName?: string, ownerEmail?: string ): Observable<Dmca[]> {
+    return this.http.get<Dmca[]>(`${Constants.apiPaths.dmca}?limit=${this.trackSearchLim}${recordType ? '&record_type=' + recordType : ''}${recievedDate ? '&recieved_date=' + recievedDate : ''}${contentType ? '&content_type=' + contentType : ''}${contentName ? '&content_name=' + contentName : ''}${username ? '&username=' + username : ''}${ownerName ? '&owner_name=' + ownerName : ''}${ownerEmail ? '&owner_email=' + ownerEmail : ''}`, {headers: this.httpHeaders}).pipe(
+      map((data: Dmca[]) => data),
+      catchError(this.handleError)
+    );
+
+  }
+
   getArtists(artistName: string): Observable<Artist[]> {
     return this.http.get<Artist[]>(`${Constants.apiPaths.artists}?limit=${this.artistSearchLimit}&name=${artistName}`, {headers: this.httpHeaders}).pipe(
       tap(data => data),
@@ -50,6 +59,22 @@ export class MusicService {
   getLists(listName?: string): Observable<Playlist[]> {
     return this.http.get<Playlist[]>(`${Constants.apiPaths.playlists}${listName ? '/' + listName + '/tracks' : ''}`, {headers: this.httpHeaders}).pipe(
       tap(data => data),
+      catchError(this.handleError)
+    );
+  }
+
+  createDmca(recordType?: string, receivedDate?: Date, contentType?: string, contentName?: string, username?: string, ownerName?: string, ownerEmail?: string, id?: number ): Observable<Dmca[]> {
+    return this.http.put<Dmca[]>(`${Constants.apiPaths.dmca}`, {
+      record_type: recordType,
+      received_date: receivedDate,
+      content_type: contentType,
+      content_name: contentName,
+      username: username,
+      owner_name: ownerName,
+      owner_email: ownerEmail,
+      id: id
+    }, {headers: this.httpHeaders}).pipe(
+      map((data: Dmca[]) => data),
       catchError(this.handleError)
     );
   }

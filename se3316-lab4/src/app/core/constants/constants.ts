@@ -2,6 +2,7 @@ const serverPrefix = `${window.location.protocol}//${window.location.hostname}:3
 
 export const Constants = {
   apiPaths: {
+    dmca: `${serverPrefix}/music/dmca`,
     genres: `${serverPrefix}/music/genres`,
     tracks: `${serverPrefix}/music/tracks`,
     artists: `${serverPrefix}/music/artists`,

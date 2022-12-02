@@ -21,7 +21,7 @@
       <div class="header">
         <button class="review" (click)="openReview(selectedList.listName, true)">Write a review</button>
 
-        <button class="visibility" (click)="updateVisibility(selectedList, selectedList.visibility === 'Private' ? 'Public' : 'Private')" *ngIf="username === selectedList.owner">{{selectedList.visibility === 'Private' ? 'Make Public' : 'Make Private'}}</button>
+        <button class="visibility" (click)="updateVisibility(selectedList, selectedList.visibility === 'Public' ? 'Private' : 'Public')" *ngIf="username === selectedList.owner">{{selectedList.visibility === 'Public' ? 'Make Private' : 'Make Public'}}</button>
         <span [ngbPopover]="username === selectedList.owner ? editName : ''" placement="left" [autoClose]="'outside'" #renamePopover="ngbPopover">{{selectedList.listName}}</span>
         <button (click)="deleteList(selectedList)" *ngIf="username === selectedList.owner">X</button>
 
@@ -32,6 +32,8 @@
           </form>
         </ng-template>
       </div>
+
+      <span class="creator">By: {{selectedList?.owner}}</span>
 
       <div class="descriptionArea">
         <button *ngIf="selectedList.owner === username" (click)="editDescription ? saveDescription(description.value): '';editDescription = !editDescription">{{editDescription ? 'Save Changes' : 'Edit Description'}}</button>

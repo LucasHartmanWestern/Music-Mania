@@ -1,8 +1,21 @@
-h4{
-    font-size: 14pt;
-}
+.modal-body {
+  max-height: 80vh;
+  overflow-y: scroll;
 
-div{
-    
-    padding-left: 5%;
+  .descriptionArea {
+    display: block;
+
+    span {
+      white-space: pre-wrap;
+      display: block;
+      max-height: 70vh;
+      width: 100%;
+    }
+
+    textarea {
+      display: block;
+      height: 70vh;
+      width: 100%;
+    }
+  }
 }

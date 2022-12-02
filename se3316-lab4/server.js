@@ -72,43 +72,38 @@ app.use( (req, res, next) => {
     next();
 });
 
+// Get dmca requests
 app.get('/api/v1/music/dmca', (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
   var sql = "SELECT * FROM music.dmca";
   con.query(sql, function (err, result) {
     if (err) throw err;
     res.send(result);
   });
+
+  // Sent Object Structure:
+  // [
+  //  ...
+  //  {
+  //    id: int,
+  //    record_type: string,
+  //    received_date: string,
+  //    content_type: string,
+  //    content_name: string,
+  //    username: string,
+  //    owner_name: string,
+  //    owner_email: string
+  //  }
+  //  ...
+  // ]
 })
-
-// Get all available genre names, IDs and parent IDs
-app.get('/api/v1/music/genres', (req, res) => {
-
-    // Received Object Structure:
-    // N/A
-
-    var sql = "SELECT * FROM music.genres";
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      res.send(result);
-    });
-
-    // Sent Object Structure:
-    // [
-    //   ...
-    //   {
-    //      "genre_id": int,
-    //      "#tracks": int,
-    //      "parent": int,
-    //      "title": string,
-    //      "top_level": int
-    //    }
-    //   ...
-    // ]
-});
 
 app.put('/api/v1/music/dmca', async (req, res) => {
   let token = req.header('Authorization');
-  
+
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
     if (decoded.access_level < 0) {
@@ -138,6 +133,79 @@ app.put('/api/v1/music/dmca', async (req, res) => {
   // {"tracks":[]}
 });
 
+// Get policy
+app.get('/api/v1/music/policy', (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  var sql = `SELECT * FROM music.policies WHERE type = '${req.query.policy}'`;
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send(result[0]);
+  });
+
+  // Sent Object Structure:
+  // { policyType: string, body: string }
+})
+
+// Update policy
+app.put('/api/v1/music/policy', (req, res) => {
+
+  // Received Object Structure:
+  // { policyType: string, body: string }
+
+  let token = req.header('Authorization');
+
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level < 3) {
+      res.status(400).send("Not authorized")
+      return;
+    } else {
+      var sql1 = `UPDATE music.policies SET body = '${req.body.body}' WHERE type = '${req.body.policyType}'`;
+      con.query(sql1, function (err1, result1) {
+        if (err1) res.status(400).send(err1);
+        else {
+          var sql2 = `SELECT * FROM music.policies WHERE type = '${req.body.policyType}'`;
+          con.query(sql2, function (err2, result2) {
+            if (err2) res.status(400).send(err2);
+            else res.send(result2[0]);
+          });
+        }
+      });
+    }
+  });
+
+  // Sent Object Structure:
+  // { policyType: string, body: string }
+})
+
+// Get all available genre names, IDs and parent IDs
+app.get('/api/v1/music/genres', (req, res) => {
+
+    // Received Object Structure:
+    // N/A
+
+    var sql = "SELECT * FROM music.genres";
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    });
+
+    // Sent Object Structure:
+    // [
+    //   ...
+    //   {
+    //      "genre_id": int,
+    //      "#tracks": int,
+    //      "parent": int,
+    //      "title": string,
+    //      "top_level": int
+    //    }
+    //   ...
+    // ]
+});
 
 // Get the first n number of matching track IDs for a given search pattern matching the track title or album
 // If the number of matches is less than n, then return all matches
@@ -184,12 +252,12 @@ app.get('/api/v1/music/tracks', (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-      var sql = "SELECT * FROM music.tracks "+ 
-      "WHERE"+ 
-      "(soundex(track_title) like soundex(?) OR LOCATE(?, track_title)) OR "+ 
-      "(soundex(album_title) like soundex(?) OR LOCATE(?, album_title)) OR "+ 
-      "LOCATE(?, track_genres) OR "+ 
-      "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+ 
+      var sql = "SELECT * FROM music.tracks "+
+      "WHERE"+
+      "(soundex(track_title) like soundex(?) OR LOCATE(?, track_title)) OR "+
+      "(soundex(album_title) like soundex(?) OR LOCATE(?, album_title)) OR "+
+      "LOCATE(?, track_genres) OR "+
+      "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+
       "LIMIT ?;"
       con.query(sql,[trackTitle,trackTitle,albumTitle,albumTitle,genreTitle,artistName,artistName,lim], function (err, result) {
         if (err) {res.send(err)};

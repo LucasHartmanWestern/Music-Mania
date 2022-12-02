@@ -5,14 +5,65 @@
   .descriptionArea {
     display: block;
 
-    span {
+    button {
+      border: none;
+      outline: none;
+      background-color: #fafafa;
+      border-radius: 12px;
+      padding: 8px 24px;
+      box-shadow: rgb(0 0 0 / 15%) 1.95px 1.95px 2.6px;
+    }
+
+    .text-display {
+      overflow-y: scroll;
+      border: 1px solid #ecf0f1;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 12px;
       white-space: pre-wrap;
       display: block;
       max-height: 70vh;
       width: 100%;
+
+      ::ng-deep span  {
+        display: block;
+        margin: -64px 0;
+
+        h1 {
+          position: sticky;
+          top: 0;
+          background-color: white;
+          border-radius: 12px;
+          box-shadow: rgb(0 0 0 / 15%) 1.95px 1.95px 2.6px;
+          padding: 12px;
+        }
+
+        h2, h3, h4 {
+          font-weight: normal;
+        }
+
+        h2 {
+          margin: -12px 0 -12px 12px !important;
+          font-size: 24px;
+        }
+        h3 {
+          margin: -12px 0 -12px 24px !important;
+          font-size: 18px;
+        }
+        h4 {
+          margin: -24px 0 -12px 36px !important;
+          font-size: 14px;
+        }
+
+      }
     }
 
     textarea {
+      border: 1px solid #ecf0f1;
+      border-radius: 12px;
+      padding: 24px;
+      outline: none;
+      margin-top: 12px;
       display: block;
       height: 70vh;
       width: 100%;

@@ -3,7 +3,7 @@
   <div id="privacy" *ngIf="type==='privacy'">
     <div class="descriptionArea">
       <button *ngIf="admin" (click)="editPolicy ? savePolicy(policy.value): '';editPolicy = !editPolicy">{{editPolicy ? 'Save Changes' : 'Edit Policy'}}</button>
-      <span *ngIf="privacyPolicy && editPolicy === false" [innerHTML]="privacyPolicy"></span>
+      <div *ngIf="privacyPolicy && editPolicy === false" [innerHTML]="privacyPolicy" class="text-display"></div>
       <textarea [hidden]="!editPolicy" [value]="privacyPolicy || ''" [placeholder]="'New description...'" #policy></textarea>
     </div>
   </div>
@@ -11,7 +11,7 @@
   <div id="use" *ngIf="type==='use'">
     <div class="descriptionArea">
       <button *ngIf="admin" (click)="editPolicy ? savePolicy(policy.value): '';editPolicy = !editPolicy">{{editPolicy ? 'Save Changes' : 'Edit Policy'}}</button>
-      <span *ngIf="usePolicy && editPolicy === false" [innerHTML]="usePolicy"></span>
+      <div *ngIf="usePolicy && editPolicy === false" [innerHTML]="usePolicy" class="text-display"></div>
       <textarea [hidden]="!editPolicy" [value]="usePolicy || ''" [placeholder]="'New description...'" #policy></textarea>
     </div>
   </div>
@@ -19,7 +19,7 @@
   <div id="dmca" *ngIf="type==='dmca'" >
     <div class="descriptionArea">
       <button *ngIf="admin" (click)="editPolicy ? savePolicy(policy.value): '';editPolicy = !editPolicy">{{editPolicy ? 'Save Changes' : 'Edit Policy'}}</button>
-      <span *ngIf="dmcaPolicy && editPolicy === false" [innerHTML]="dmcaPolicy"></span>
+      <div *ngIf="dmcaPolicy && editPolicy === false" [innerHTML]="dmcaPolicy" class="text-display"></div>
       <textarea [hidden]="!editPolicy" [value]="dmcaPolicy || ''" [placeholder]="'New description...'" #policy></textarea>
     </div>
   </div>

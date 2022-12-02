@@ -78,7 +78,7 @@ app.get('/api/v1/music/dmca', (req, res) => {
   // Received Object Structure:
   // N/A
 
-  var sql = "SELECT * FROM music.dmca";
+  var sql = "SELECT * FROM music.dmca ORDER BY received_date DESC";
   con.query(sql, function (err, result) {
     if (err) throw err;
     res.send(result);
@@ -102,17 +102,36 @@ app.get('/api/v1/music/dmca', (req, res) => {
 })
 
 app.put('/api/v1/music/dmca', async (req, res) => {
-  let token = req.header('Authorization');
 
+  // Received Object Structure:
+  // {
+  //    content_name: string,
+  //    content_type: string,
+  //    owner_email: string,
+  //    owner_name: string,
+  //    received_date: string,
+  //    record_type: string,
+  //    username: string
+  // }
+
+  let token = req.header('Authorization');
   jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
     if (err) res.status(500);
-    if (decoded.access_level < 0) {
+    if (decoded.access_level < 3) {
       res.status(400).send("Not authorized")
       return;
     } else {
       // Retrieve and verify input parameter and body
       let body = req.body;
-      const schema = { record_type: Joi.string().required(), received_date: Joi.date().required(), content_type: Joi.string().required(), content_name: Joi.string().required(), username: Joi.string().required(), owner_name: Joi.string().required(), owner_email: Joi.string().required()  };
+      const schema = {
+        record_type: Joi.string().required(),
+        received_date: Joi.date().required(),
+        content_type: Joi.string().required(),
+        content_name: Joi.string().required(),
+        username: Joi.string().required(),
+        owner_email: Joi.string().email().required(),
+        owner_name: Joi.string().required()
+      };
       const result = Joi.validate(body, schema);
       if (result.error) res.status(400).send(result.error.details[0].message);
       else {
@@ -122,7 +141,11 @@ app.put('/api/v1/music/dmca', async (req, res) => {
           if (err) {
             res.status(400).send(err);
           } else {
-            res.send({"dmca": []});
+            var sql = "SELECT * FROM music.dmca ORDER BY received_date DESC";
+            con.query(sql, function (err, result) {
+              if (err) throw err;
+              res.send(result);
+            });
           }
         });
       }
@@ -130,7 +153,20 @@ app.put('/api/v1/music/dmca', async (req, res) => {
   });
 
   // Sent Object Structure:
-  // {"tracks":[]}
+  // [
+  //  ...
+  //  {
+  //    id: int,
+  //    record_type: string,
+  //    received_date: string,
+  //    content_type: string,
+  //    content_name: string,
+  //    username: string,
+  //    owner_name: string,
+  //    owner_email: string
+  //  }
+  //  ...
+  // ]
 });
 
 // Get policy

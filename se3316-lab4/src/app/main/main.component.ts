@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import {Credentials} from "../core/constants/common.enum";
+import { Credentials } from "../core/constants/common.enum";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { PolicyComponent } from '../modals/policy/policy.component';
 import { RecorderToolComponent } from '../modals/recorder-tool/recorder-tool.component';
+import { JwtHelperService } from "@auth0/angular-jwt";
 
 @Component({
   selector: 'app-main',
@@ -11,7 +12,8 @@ import { RecorderToolComponent } from '../modals/recorder-tool/recorder-tool.com
 })
 export class MainComponent implements OnInit {
 
-  admin: boolean = true;
+  helper = new JwtHelperService();
+  admin: boolean = this.helper.decodeToken(localStorage.getItem('token') || undefined).access_level >= 3;
 
   credentials: Credentials = {
     jwt: localStorage.getItem('token')
@@ -27,6 +29,6 @@ export class MainComponent implements OnInit {
     modalRef.componentInstance.type = type;
   }
   openTools(): void{
-    const modalRef = this.modalService.open(RecorderToolComponent, {centered: true, windowClass: 'Recorder-ToolModalClass',})
+    const modalRef = this.modalService.open(RecorderToolComponent, {centered: true, windowClass: 'RecorderToolModalClass',})
   }
 }

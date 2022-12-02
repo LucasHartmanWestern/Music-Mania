@@ -1,24 +1,98 @@
-tr{
+.modal-body {
+  position: relative;
+
+  h1 {
+    text-align: center;
+  }
+
+  button:not(.close), input[type=submit] {
+    border: none;
+    outline: none;
+    background-color: #ecf0f1;
+    border-radius: 12px;
+    padding: 4px 12px;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+  }
+
+  .back {
+    top: 64px !important;
+  }
+
+  .close {
+    border: 2px solid #ecf0f1;
+    outline: none;
+    background-color: transparent;
+    border-radius: 12px;
+    padding: 8px 24px;
+    font-weight: bold;
+  }
+
+  .error {
+    border-radius: 12px;
+    background-color: #f2dede;
+    border: 1px solid #b94a48;
+    color: #b94a48;
+    padding: 8px;
+    text-align: center;
+    width: 50%;
+    margin: auto;
+  }
+
+  select {
+    width: 250px;
+  }
+
+  .data {
+    max-height: 40vh;
+    overflow-y: scroll;
+    margin-bottom: 24px;
+    border: 1px solid #ecf0f1;
+    border-radius: 12px;
+    padding: 0 12px 12px 12px;
+
+    table {
+      width: 100%;
+      border-collapse:separate;
+      border-spacing: 0 1.3em;
+
+      .headers {
+        background-color: white;
+        position: sticky;
+        top: 20px;
+        box-shadow: rgba(99, 99, 99, 0.2) 0 2px 8px 0;
+
+        th {
+          padding: 12px;
+          text-align: center;
+        }
+      }
+
+      td {
+        padding: 12px;
+        text-align: center;
+      }
+    }
+  }
+
+  .option {
+    margin: 12px auto;
+    display: flex;
+    width: 50%;
+    justify-content: space-between;
+    text-align: center;
     align-items: center;
-    margin-bottom: 12px;
-    padding: 12px;
-    
-}
 
-table{
-    width: 100%;
-    border: 1px solid;
-}
-
-td{
-    width: 100px;
-    border: 1px solid;
-}
-
-div{
-    min-width: 500px;
-}
-
-body{
-    width: 750px;
+    input[type=text], input[type=date] {
+      width: 250px;
+      height: 39px;
+      border: none;
+      outline: none;
+      background-color: #fafafa;
+      box-shadow: rgb(99 99 99 / 20%) 0px 2px 8px 0px;
+      border-radius: 12px;
+      padding: 4px 12px;
+    }
+  }
 }

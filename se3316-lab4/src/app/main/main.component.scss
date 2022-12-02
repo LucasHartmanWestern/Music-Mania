@@ -4,6 +4,7 @@
 
   .main {
     width: 80%;
+    position: relative;
   }
 
   .sidebar {
@@ -12,16 +13,29 @@
 
   .references {
     position: absolute;
-    bottom: 45px;
-    left: calc(35% - 70px);
-    
+    display: flex;
+    justify-content: space-around;
+    bottom: 36px;
+    font-size: 18px;
+    width: calc(100% - 48px);
+    margin: 0 24px;
   }
 
   .policy {
     position: absolute;
-    bottom: 10px;
-    justify-content: space-between;
-    left: calc(30% );
+    display: flex;
+    justify-content: space-around;
+    bottom: 0;
+    width: calc(100% - 48px);
+    margin: 0 24px;
+
+    button {
+      background-color: #fafafa;
+      border: none;
+      border-radius: 12px;
+      padding: 4px 12px;
+      box-shadow: rgb(0 0 0 / 15%) 1.95px 1.95px 2.6px;
+    }
   }
 
 }

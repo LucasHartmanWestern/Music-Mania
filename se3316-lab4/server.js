@@ -72,12 +72,149 @@ app.use( (req, res, next) => {
     next();
 });
 
+// Get dmca requests
 app.get('/api/v1/music/dmca', (req, res) => {
-  var sql = "SELECT * FROM music.dmca";
+
+  // Received Object Structure:
+  // N/A
+
+  var sql = "SELECT * FROM music.dmca ORDER BY received_date DESC";
   con.query(sql, function (err, result) {
     if (err) throw err;
     res.send(result);
   });
+
+  // Sent Object Structure:
+  // [
+  //  ...
+  //  {
+  //    id: int,
+  //    record_type: string,
+  //    received_date: string,
+  //    content_type: string,
+  //    content_name: string,
+  //    username: string,
+  //    owner_name: string,
+  //    owner_email: string
+  //  }
+  //  ...
+  // ]
+})
+
+app.put('/api/v1/music/dmca', async (req, res) => {
+
+  // Received Object Structure:
+  // {
+  //    content_name: string,
+  //    content_type: string,
+  //    owner_email: string,
+  //    owner_name: string,
+  //    received_date: string,
+  //    record_type: string,
+  //    username: string
+  // }
+
+  let token = req.header('Authorization');
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level < 3) {
+      res.status(400).send("Not authorized")
+      return;
+    } else {
+      // Retrieve and verify input parameter and body
+      let body = req.body;
+      const schema = {
+        record_type: Joi.string().required(),
+        received_date: Joi.date().required(),
+        content_type: Joi.string().required(),
+        content_name: Joi.string().required(),
+        username: Joi.string().required(),
+        owner_email: Joi.string().email().required(),
+        owner_name: Joi.string().required()
+      };
+      const result = Joi.validate(body, schema);
+      if (result.error) res.status(400).send(result.error.details[0].message);
+      else {
+        var sql = "INSERT INTO music.dmca (record_type, received_date, content_type, content_name, username, owner_name, owner_email) VALUES ?";
+        var values = [[body.record_type, body.received_date, body.content_type,body.content_name,body.username, body.owner_name,body.owner_email]];
+        con.query(sql,[values], function (err, result) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            var sql = "SELECT * FROM music.dmca ORDER BY received_date DESC";
+            con.query(sql, function (err, result) {
+              if (err) throw err;
+              res.send(result);
+            });
+          }
+        });
+      }
+    }
+  });
+
+  // Sent Object Structure:
+  // [
+  //  ...
+  //  {
+  //    id: int,
+  //    record_type: string,
+  //    received_date: string,
+  //    content_type: string,
+  //    content_name: string,
+  //    username: string,
+  //    owner_name: string,
+  //    owner_email: string
+  //  }
+  //  ...
+  // ]
+});
+
+// Get policy
+app.get('/api/v1/music/policy', (req, res) => {
+
+  // Received Object Structure:
+  // N/A
+
+  var sql = `SELECT * FROM music.policies WHERE type = '${req.query.policy}'`;
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send(result[0]);
+  });
+
+  // Sent Object Structure:
+  // { policyType: string, body: string }
+})
+
+// Update policy
+app.put('/api/v1/music/policy', (req, res) => {
+
+  // Received Object Structure:
+  // { policyType: string, body: string }
+
+  let token = req.header('Authorization');
+
+  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+    if (err) res.status(500);
+    if (decoded.access_level < 3) {
+      res.status(400).send("Not authorized")
+      return;
+    } else {
+      var sql1 = `UPDATE music.policies SET body = '${req.body.body}' WHERE type = '${req.body.policyType}'`;
+      con.query(sql1, function (err1, result1) {
+        if (err1) res.status(400).send(err1);
+        else {
+          var sql2 = `SELECT * FROM music.policies WHERE type = '${req.body.policyType}'`;
+          con.query(sql2, function (err2, result2) {
+            if (err2) res.status(400).send(err2);
+            else res.send(result2[0]);
+          });
+        }
+      });
+    }
+  });
+
+  // Sent Object Structure:
+  // { policyType: string, body: string }
 })
 
 // Get all available genre names, IDs and parent IDs
@@ -105,39 +242,6 @@ app.get('/api/v1/music/genres', (req, res) => {
     //   ...
     // ]
 });
-
-app.put('/api/v1/music/dmca', async (req, res) => {
-  let token = req.header('Authorization');
-  
-  jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
-    if (err) res.status(500);
-    if (decoded.access_level < 0) {
-      res.status(400).send("Not authorized")
-      return;
-    } else {
-      // Retrieve and verify input parameter and body
-      let body = req.body;
-      const schema = { record_type: Joi.string().required(), received_date: Joi.date().required(), content_type: Joi.string().required(), content_name: Joi.string().required(), username: Joi.string().required(), owner_name: Joi.string().required(), owner_email: Joi.string().required()  };
-      const result = Joi.validate(body, schema);
-      if (result.error) res.status(400).send(result.error.details[0].message);
-      else {
-        var sql = "INSERT INTO music.dmca (record_type, received_date, content_type, content_name, username, owner_name, owner_email) VALUES ?";
-        var values = [[body.record_type, body.received_date, body.content_type,body.content_name,body.username, body.owner_name,body.owner_email]];
-        con.query(sql,[values], function (err, result) {
-          if (err) {
-            res.status(400).send(err);
-          } else {
-            res.send({"dmca": []});
-          }
-        });
-      }
-    }
-  });
-
-  // Sent Object Structure:
-  // {"tracks":[]}
-});
-
 
 // Get the first n number of matching track IDs for a given search pattern matching the track title or album
 // If the number of matches is less than n, then return all matches
@@ -184,12 +288,12 @@ app.get('/api/v1/music/tracks', (req, res) => {
 
     if (result.error) res.status(400).send(result.error.details[0].message);
     else {
-      var sql = "SELECT * FROM music.tracks "+ 
-      "WHERE"+ 
-      "(soundex(track_title) like soundex(?) OR LOCATE(?, track_title)) OR "+ 
-      "(soundex(album_title) like soundex(?) OR LOCATE(?, album_title)) OR "+ 
-      "LOCATE(?, track_genres) OR "+ 
-      "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+ 
+      var sql = "SELECT * FROM music.tracks "+
+      "WHERE"+
+      "(soundex(track_title) like soundex(?) OR LOCATE(?, track_title)) OR "+
+      "(soundex(album_title) like soundex(?) OR LOCATE(?, album_title)) OR "+
+      "LOCATE(?, track_genres) OR "+
+      "(soundex(artist_name) like soundex(?) OR LOCATE(?, artist_name))"+
       "LIMIT ?;"
       con.query(sql,[trackTitle,trackTitle,albumTitle,albumTitle,genreTitle,artistName,artistName,lim], function (err, result) {
         if (err) {res.send(err)};

@@ -154,6 +154,25 @@ export class MusicService {
     );
   }
 
+  getPolicy(policyType: string): Observable<any> {
+    return this.http.get(`${Constants.apiPaths.policy}?policy=${policyType}`, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updatePolicy(policyType: string, body: any): Observable<any> {
+    return this.http.put(`${Constants.apiPaths.policy}`, {
+      policyType: policyType,
+      body: body
+    }, {headers: this.httpHeaders}).pipe(
+      map((res: any) => res)
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(err: HttpErrorResponse) {
     let errorMessage = '';
     if (err.error instanceof ErrorEvent) {

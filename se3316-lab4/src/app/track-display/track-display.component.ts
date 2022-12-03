@@ -61,7 +61,10 @@ export class TrackDisplayComponent implements OnInit {
     this.musicService.getGenres().subscribe(res => {
       this.genres = res;
       //this.spinner.hide();
-    }, error => console.log(error));
+    }, error => {
+      alert(error);
+      this.spinner.hide();
+    });
   }
 
   // Get and display the tracks
@@ -72,7 +75,10 @@ export class TrackDisplayComponent implements OnInit {
       this.artists = [];
       this.tracks = res;
       this.spinner.hide();
-    }, error => console.log(error));
+    }, error => {
+      alert(error);
+      this.spinner.hide();
+    });
   }
 
   // Get and display artists
@@ -83,7 +89,10 @@ export class TrackDisplayComponent implements OnInit {
       this.tracks = [];
       this.artists = res;
       this.spinner.hide();
-    }, error => console.log(error));
+    }, error => {
+      alert(error);
+      this.spinner.hide();
+    });
   }
 
   // Open review modal and pass in review data
@@ -117,6 +126,9 @@ export class TrackDisplayComponent implements OnInit {
         playlist.lastModified = this.getDate(new Date());
 
         this.musicService.updatedList$.next({list: playlist, delete: false});
+      }, error => {
+        alert(error);
+        this.spinner.hide();
       });
     });
   }
@@ -130,6 +142,9 @@ export class TrackDisplayComponent implements OnInit {
       this.selectedList.trackCount -= 1;
 
       this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+    }, error => {
+      alert(error);
+      this.spinner.hide();
     });
     this.tracks.splice(this.tracks.findIndex((t: Track) => t === track), 1);
   }
@@ -174,6 +189,9 @@ export class TrackDisplayComponent implements OnInit {
         let currentDate = new Date();
         this.selectedList.lastModified = this.getDate(new Date());
         this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+      }, error => {
+        alert(error);
+        this.spinner.hide();
       });
     }
   }
@@ -183,6 +201,9 @@ export class TrackDisplayComponent implements OnInit {
     if (!newDescription) return;
     this.musicService.updateDescription(this.selectedList.listName, newDescription).subscribe(res => {
       this.selectedList.description = newDescription;
+    }, error => {
+      alert(error);
+      this.spinner.hide();
     });
   }
 
@@ -193,6 +214,9 @@ export class TrackDisplayComponent implements OnInit {
       let currentDate = new Date();
       this.selectedList.lastModified = this.getDate(new Date());
       this.musicService.updatedList$.next({list: this.selectedList, delete: false});
+    }, error => {
+      alert(error);
+      this.spinner.hide();
     });
   }
 

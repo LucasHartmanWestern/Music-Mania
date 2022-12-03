@@ -67,13 +67,25 @@ app.use( (req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE');
     res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    if(req.path !== '/api/v1/login/credentials' || req.path !== '/api/v1/login/credentials/guest') {
-      let token = req.header('Authorization');
-      jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
-        //console.log(decoded);
-      });
+    if (req.method === 'OPTIONS') next();
+    else {
+      if(req.path !== '/api/v1/login/credentials' && req.path !== '/api/v1/login/credentials/guest') {
+        let token = req.header('Authorization');
+        jwt.verify(token, process.env.JWT_KEY || 'se3316', (err, decoded) => {
+          if (!decoded) res.status(401).send("Improper token");
+          if (decoded.username !== 'guest') {
+            var sql = `SELECT * FROM music.credentials WHERE jwt = '${token}' AND username = '${decoded.username}'`;
+            con.query(sql, function (err, result) {
+              if (err) {
+                res.status(500).send("err");
+              }
+              if (!result.length) res.status(401).send("Access not authorized");
+              else next();
+            });
+          } else next();
+        });
+      } else next();
     }
-    next();
 });
 
 // Get dmca requests
@@ -786,6 +798,11 @@ app.post('/api/v1/login/credentials', (req, res) => {
             username: result[0].username,
             access_level: result[0].access_level
           }, process.env.JWT_KEY || 'se3316');
+
+          var sql = `UPDATE music.credentials SET jwt = '${token}' WHERE (username = '${req.body.username}' OR email = '${req.body.username}') AND (password = '${req.body.password}');`;
+          con.query(sql, function (err, result) {
+            if (err) res.status(500).send(err);
+          });
 
           res.send({jwt: token});
         }
